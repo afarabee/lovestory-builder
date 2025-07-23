@@ -5,7 +5,6 @@ import {
   Settings, 
   GitBranch, 
   FileText, 
-  MessageSquare, 
   RotateCcw,
   Save,
   Copy,
@@ -19,15 +18,13 @@ interface AppLayoutProps {
   sidebarContent?: React.ReactNode;
   chatContent?: React.ReactNode;
   showChat?: boolean;
-  onToggleChat?: () => void;
 }
 
 export function AppLayout({ 
   children, 
   sidebarContent, 
   chatContent, 
-  showChat = false, 
-  onToggleChat 
+  showChat = false
 }: AppLayoutProps) {
   const [currentProject] = useState("E-commerce Platform");
   const [connectionStatus] = useState({
@@ -76,14 +73,6 @@ export function AppLayout({
             <Button variant="ghost" size="icon-sm" title="Preview">
               <Eye className="h-4 w-4" />
             </Button>
-            <Button 
-              variant={showChat ? "default" : "ghost"} 
-              size="icon-sm" 
-              onClick={onToggleChat}
-              title="Toggle Chat"
-            >
-              <MessageSquare className="h-4 w-4" />
-            </Button>
             <Button variant="ghost" size="icon-sm" title="Settings">
               <Settings className="h-4 w-4" />
             </Button>
@@ -110,7 +99,7 @@ export function AppLayout({
 
         {/* Chat Panel */}
         {showChat && (
-          <div className="w-96 border-l border-border bg-card fixed right-0 top-16 bottom-0 overflow-auto">
+          <div className="w-96 border-l border-border bg-card fixed right-0 top-16 bottom-0 overflow-auto animate-slide-in-right">
             {chatContent}
           </div>
         )}

@@ -2,9 +2,11 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Send, 
   Bot, 
@@ -15,7 +17,9 @@ import {
   RefreshCw,
   ChevronDown,
   ChevronUp,
-  MessageSquare
+  MessageSquare,
+  Check,
+  CheckCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -47,6 +51,7 @@ export function ChatPanel() {
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [testDataUpdates, setTestDataUpdates] = useState<TestDataUpdate[]>([]);
+  const { toast } = useToast();
 
   const sendMessage = async () => {
     if (!inputValue.trim()) return;
@@ -124,6 +129,14 @@ export function ChatPanel() {
     }
   };
 
+  const applySuggestion = (message: ChatMessage) => {
+    const suggestionType = message.context || 'story';
+    toast({
+      title: "Suggestion Applied",
+      description: `${suggestionType.replace('-', ' ')} has been updated with AI suggestions.`,
+    });
+  };
+
   const quickActions = [
     { label: "Add edge cases", action: () => setInputValue("What edge cases should we consider for email validation?") },
     { label: "Strengthen criteria", action: () => setInputValue("Can you make the acceptance criteria more specific?") },
@@ -180,9 +193,22 @@ export function ChatPanel() {
                     )}
                   </div>
                   <p>{message.content}</p>
-                  <span className="text-xs opacity-70 mt-1 block">
-                    {message.timestamp.toLocaleTimeString()}
-                  </span>
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-xs opacity-70">
+                      {message.timestamp.toLocaleTimeString()}
+                    </span>
+                    {message.type === 'ai' && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => applySuggestion(message)}
+                        className="gap-1 text-xs h-6"
+                      >
+                        <CheckCircle className="h-3 w-3" />
+                        Apply Suggestion
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -239,13 +265,20 @@ export function ChatPanel() {
             {/* Enhanced Input */}
             <div className="p-4 border-t">
               <div className="space-y-2">
+                <Label htmlFor="refinement-prompt" className="text-sm font-medium">
+                  Refinement Prompt
+                </Label>
                 <Textarea
+                  id="refinement-prompt"
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
-                  placeholder="Ask me to strengthen criteria, explore edge cases, or adjust points…"
+                  placeholder="Ask me to refine criteria, explore edge cases, or adjust story points…"
                   onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendMessage())}
-                  rows={3}
-                  className="resize-none"
+                  rows={4}
+                  className="resize-none min-h-[4rem] max-h-[6rem]"
+                  style={{
+                    height: `${Math.min(Math.max(inputValue.split('\n').length, 4), 6) * 1.5}rem`
+                  }}
                 />
                 <div className="flex justify-end">
                   <Button 

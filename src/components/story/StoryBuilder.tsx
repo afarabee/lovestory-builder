@@ -31,7 +31,8 @@ import {
   AlertCircle,
   Plus,
   Minus,
-  History
+  History,
+  MessageSquare
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -62,7 +63,12 @@ interface UploadedFile {
   uploadDate: Date;
 }
 
-export function StoryBuilder() {
+interface StoryBuilderProps {
+  showChat?: boolean;
+  onToggleChat?: () => void;
+}
+
+export function StoryBuilder({ showChat = false, onToggleChat }: StoryBuilderProps = {}) {
   const [rawInput, setRawInput] = useState("");
   const [customPrompt, setCustomPrompt] = useState("");
   const [savedInput, setSavedInput] = useState(""); // For restart functionality
@@ -540,6 +546,18 @@ export function StoryBuilder() {
                       >
                         {isGeneratingDevNotes ? <RefreshCw className="h-3 w-3 animate-spin" /> : <Code className="h-3 w-3" />}
                         {isGeneratingDevNotes ? "Scanning GitHub..." : "Generate Dev Notes"}
+                      </Button>
+                      <Button
+                        variant={showChat ? "default" : "outline"}
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onToggleChat?.();
+                        }}
+                        className="gap-2"
+                      >
+                        <MessageSquare className="h-3 w-3" />
+                        {showChat ? "Close Chat" : "Open Chat"}
                       </Button>
                       {devNotesOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                     </div>

@@ -12,9 +12,11 @@ const Index = () => {
       sidebarContent={<ProjectSidebar />}
       chatContent={<ChatPanel />}
       showChat={showChat}
-      onToggleChat={() => setShowChat(!showChat)}
     >
-      <StoryBuilder />
+      <StoryBuilder 
+        showChat={showChat}
+        onToggleChat={() => setShowChat(!showChat)}
+      />
     </AppLayout>
   );
 };
