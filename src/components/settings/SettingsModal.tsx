@@ -1,0 +1,364 @@
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Settings, 
+  ChevronDown, 
+  ChevronUp, 
+  FileText, 
+  GitBranch, 
+  Zap, 
+  Upload,
+  Eye,
+  Trash2,
+  X
+} from "lucide-react";
+
+interface SettingsModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+interface ProjectSettings {
+  name: string;
+  description: string;
+  domain: string;
+  customInstructions: string;
+}
+
+interface AISettings {
+  tone: 'professional' | 'casual' | 'technical';
+  style: string;
+  pointsMethod: 'fibonacci' | 'linear' | 't-shirt';
+}
+
+interface IntegrationSettings {
+  githubRepo: string;
+  adoWorkspace: string;
+  githubToken: string;
+  adoToken: string;
+}
+
+export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
+  const [activeSection, setActiveSection] = useState({
+    project: true,
+    ai: false,
+    integrations: false,
+    fileLibrary: false
+  });
+
+  const [projectSettings, setProjectSettings] = useState<ProjectSettings>({
+    name: "E-commerce Platform",
+    description: "Next-generation shopping experience with personalized recommendations",
+    domain: "E-commerce, Retail, User Experience",
+    customInstructions: "Focus on accessibility, mobile-first design, and performance optimization."
+  });
+
+  const [aiSettings, setAiSettings] = useState<AISettings>({
+    tone: 'professional',
+    style: "Clear, concise acceptance criteria with focus on user value",
+    pointsMethod: 'fibonacci'
+  });
+
+  const [integrationSettings, setIntegrationSettings] = useState<IntegrationSettings>({
+    githubRepo: "https://github.com/company/ecommerce-platform",
+    adoWorkspace: "company.visualstudio.com/EcommercePlatform",
+    githubToken: "ghp_****",
+    adoToken: "****"
+  });
+
+  const [uploadedDocs] = useState([
+    { id: '1', name: 'API_Documentation.pdf', size: '2.4 MB', uploaded: '2 days ago' },
+    { id: '2', name: 'Design_System.pdf', size: '1.8 MB', uploaded: '1 week ago' },
+    { id: '3', name: 'User_Research.docx', size: '3.2 MB', uploaded: '2 weeks ago' }
+  ]);
+
+  if (!isOpen) return null;
+
+  const toggleSection = (section: keyof typeof activeSection) => {
+    setActiveSection(prev => ({ ...prev, [section]: !prev[section] }));
+  };
+
+  return (
+    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-4xl max-h-[90vh] overflow-hidden">
+        <CardHeader className="border-b">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-xl flex items-center gap-2">
+              <Settings className="h-5 w-5" />
+              Project Settings
+            </CardTitle>
+            <Button variant="ghost" size="icon" onClick={onClose}>
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </CardHeader>
+
+        <CardContent className="p-0">
+          <div className="grid grid-cols-4 h-[70vh]">
+            {/* Navigation Sidebar */}
+            <div className="border-r bg-muted/30 p-4">
+              <nav className="space-y-2">
+                <Button 
+                  variant={activeSection.project ? "default" : "ghost"} 
+                  className="w-full justify-start"
+                  onClick={() => toggleSection('project')}
+                >
+                  Project Context
+                </Button>
+                <Button 
+                  variant={activeSection.ai ? "default" : "ghost"} 
+                  className="w-full justify-start"
+                  onClick={() => toggleSection('ai')}
+                >
+                  AI Preferences
+                </Button>
+                <Button 
+                  variant={activeSection.integrations ? "default" : "ghost"} 
+                  className="w-full justify-start"
+                  onClick={() => toggleSection('integrations')}
+                >
+                  Integrations
+                </Button>
+                <Button 
+                  variant={activeSection.fileLibrary ? "default" : "ghost"} 
+                  className="w-full justify-start"
+                  onClick={() => toggleSection('fileLibrary')}
+                >
+                  File Library
+                </Button>
+              </nav>
+            </div>
+
+            {/* Content Area */}
+            <div className="col-span-3 overflow-y-auto">
+              {/* Project Context */}
+              {activeSection.project && (
+                <div className="p-6 space-y-6">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Project Context</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="project-name">Project Name</Label>
+                        <Input 
+                          id="project-name"
+                          value={projectSettings.name}
+                          onChange={(e) => setProjectSettings(prev => ({ ...prev, name: e.target.value }))}
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="project-description">Description</Label>
+                        <Textarea 
+                          id="project-description"
+                          value={projectSettings.description}
+                          onChange={(e) => setProjectSettings(prev => ({ ...prev, description: e.target.value }))}
+                          rows={3}
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="project-domain">Domain Knowledge</Label>
+                        <Input 
+                          id="project-domain"
+                          value={projectSettings.domain}
+                          onChange={(e) => setProjectSettings(prev => ({ ...prev, domain: e.target.value }))}
+                          placeholder="Industry, technologies, key concepts..."
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="custom-instructions">Custom Instructions for AI</Label>
+                        <Textarea 
+                          id="custom-instructions"
+                          value={projectSettings.customInstructions}
+                          onChange={(e) => setProjectSettings(prev => ({ ...prev, customInstructions: e.target.value }))}
+                          placeholder="Special considerations, coding standards, business rules..."
+                          rows={4}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* AI Preferences */}
+              {activeSection.ai && (
+                <div className="p-6 space-y-6">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">AI Preferences</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="ai-tone">Tone</Label>
+                        <Select value={aiSettings.tone} onValueChange={(value: any) => setAiSettings(prev => ({ ...prev, tone: value }))}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="professional">Professional</SelectItem>
+                            <SelectItem value="casual">Casual</SelectItem>
+                            <SelectItem value="technical">Technical</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="ai-style">Style Guidelines</Label>
+                        <Textarea 
+                          id="ai-style"
+                          value={aiSettings.style}
+                          onChange={(e) => setAiSettings(prev => ({ ...prev, style: e.target.value }))}
+                          rows={3}
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="points-method">Story Points Methodology</Label>
+                        <Select value={aiSettings.pointsMethod} onValueChange={(value: any) => setAiSettings(prev => ({ ...prev, pointsMethod: value }))}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="fibonacci">Fibonacci (1,2,3,5,8,13)</SelectItem>
+                            <SelectItem value="linear">Linear (1,2,3,4,5,6)</SelectItem>
+                            <SelectItem value="t-shirt">T-Shirt (XS,S,M,L,XL)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Integrations */}
+              {activeSection.integrations && (
+                <div className="p-6 space-y-6">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Integrations</h3>
+                    <div className="space-y-6">
+                      {/* GitHub Section */}
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <GitBranch className="h-4 w-4" />
+                          <h4 className="font-medium">GitHub</h4>
+                          <Badge variant="default" className="text-xs">Connected</Badge>
+                        </div>
+                        <div className="space-y-2">
+                          <div>
+                            <Label htmlFor="github-repo">Repository URL</Label>
+                            <Input 
+                              id="github-repo"
+                              value={integrationSettings.githubRepo}
+                              onChange={(e) => setIntegrationSettings(prev => ({ ...prev, githubRepo: e.target.value }))}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="github-token">Access Token</Label>
+                            <Input 
+                              id="github-token"
+                              type="password"
+                              value={integrationSettings.githubToken}
+                              onChange={(e) => setIntegrationSettings(prev => ({ ...prev, githubToken: e.target.value }))}
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Azure DevOps Section */}
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <FileText className="h-4 w-4" />
+                          <h4 className="font-medium">Azure DevOps</h4>
+                          <Badge variant="default" className="text-xs">Connected</Badge>
+                        </div>
+                        <div className="space-y-2">
+                          <div>
+                            <Label htmlFor="ado-workspace">Workspace URL</Label>
+                            <Input 
+                              id="ado-workspace"
+                              value={integrationSettings.adoWorkspace}
+                              onChange={(e) => setIntegrationSettings(prev => ({ ...prev, adoWorkspace: e.target.value }))}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="ado-token">Personal Access Token</Label>
+                            <Input 
+                              id="ado-token"
+                              type="password"
+                              value={integrationSettings.adoToken}
+                              onChange={(e) => setIntegrationSettings(prev => ({ ...prev, adoToken: e.target.value }))}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* File Library */}
+              {activeSection.fileLibrary && (
+                <div className="p-6 space-y-6">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">File Library</h3>
+                    
+                    {/* Upload Area */}
+                    <div className="border-2 border-dashed rounded-lg p-6 text-center mb-6">
+                      <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                      <p className="text-sm text-muted-foreground mb-2">
+                        Upload reference documents for AI context
+                      </p>
+                      <Button variant="outline" size="sm">
+                        Browse Files
+                      </Button>
+                    </div>
+
+                    {/* File List */}
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-sm">Uploaded Documents</h4>
+                      {uploadedDocs.map((doc) => (
+                        <div key={doc.id} className="flex items-center gap-3 p-3 border rounded-lg">
+                          <FileText className="h-4 w-4 text-muted-foreground" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">{doc.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {doc.size} • {doc.uploaded}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Button variant="ghost" size="sm" title="Preview">
+                              <Eye className="h-3 w-3" />
+                            </Button>
+                            <Button variant="ghost" size="sm" title="Delete">
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </CardContent>
+
+        {/* Footer */}
+        <div className="border-t p-4 flex justify-end gap-2">
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button onClick={onClose}>
+            Save Settings
+          </Button>
+        </div>
+      </Card>
+    </div>
+  );
+}

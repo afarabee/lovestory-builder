@@ -130,23 +130,47 @@ export function ProjectSidebar() {
         <CardHeader className="pb-3">
           <CardTitle className="text-base">Quick Actions</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2">
-          <Button variant="default" size="sm" className="w-full justify-start gap-2">
-            <Plus className="h-4 w-4" />
-            New User Story
-          </Button>
-          <Button variant="outline" size="sm" className="w-full justify-start gap-2">
-            <GitBranch className="h-4 w-4" />
-            Sync with GitHub
-          </Button>
-          <Button variant="outline" size="sm" className="w-full justify-start gap-2">
-            <FileText className="h-4 w-4" />
-            Export to ADO
-          </Button>
-          <Button variant="ghost" size="sm" className="w-full justify-start gap-2">
-            <Settings className="h-4 w-4" />
-            Project Settings
-          </Button>
+        <CardContent className="space-y-4">
+          {/* Story Actions */}
+          <div>
+            <h4 className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Story Actions</h4>
+            <div className="space-y-1">
+              <Button variant="default" size="sm" className="w-full justify-start gap-2">
+                <Plus className="h-4 w-4" />
+                New User Story
+              </Button>
+              <Button variant="outline" size="sm" className="w-full justify-start gap-2">
+                <History className="h-4 w-4" />
+                Restart Story
+              </Button>
+            </div>
+          </div>
+
+          {/* Integrations */}
+          <div>
+            <h4 className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Integrations</h4>
+            <div className="space-y-1">
+              <Button variant="outline" size="sm" className="w-full justify-start gap-2">
+                <GitBranch className="h-4 w-4" />
+                Sync with GitHub
+              </Button>
+              <Button variant="outline" size="sm" className="w-full justify-start gap-2">
+                <FileText className="h-4 w-4" />
+                Export to ADO
+              </Button>
+            </div>
+          </div>
+
+          {/* Settings */}
+          <div>
+            <h4 className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Settings</h4>
+            <div className="space-y-1">
+              <Button variant="ghost" size="sm" className="w-full justify-start gap-2">
+                <Settings className="h-4 w-4" />
+                Project Settings
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
 

@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { 
   Send, 
   Bot, 
@@ -11,7 +12,10 @@ import {
   Sparkles,
   TestTube,
   Code,
-  RefreshCw
+  RefreshCw,
+  ChevronDown,
+  ChevronUp,
+  MessageSquare
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -29,11 +33,12 @@ interface TestDataUpdate {
 }
 
 export function ChatPanel() {
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: '1',
       type: 'ai',
-      content: "I've generated your user story for registration. Would you like me to refine any specific aspect? I can adjust the acceptance criteria, explore edge cases, or modify the story points.",
+      content: "How can I help refine your story? I can strengthen acceptance criteria, explore edge cases, adjust story points, or provide technical insights.",
       timestamp: new Date(),
       context: 'story'
     }
@@ -128,14 +133,21 @@ export function ChatPanel() {
 
   return (
     <div className="h-full flex flex-col">
-      <CardHeader className="border-b">
-        <CardTitle className="text-lg flex items-center gap-2">
-          <Bot className="h-5 w-5 text-primary" />
-          Story Refinement Chat
-        </CardTitle>
-      </CardHeader>
+      <Collapsible open={!isCollapsed} onOpenChange={(open) => setIsCollapsed(!open)}>
+        <CollapsibleTrigger asChild>
+          <CardHeader className="border-b cursor-pointer hover:bg-accent/50 transition-colors">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <MessageSquare className="h-5 w-5 text-primary" />
+                Story Refinement Chat
+              </CardTitle>
+              {isCollapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+            </div>
+          </CardHeader>
+        </CollapsibleTrigger>
 
-      <CardContent className="flex-1 p-0 flex flex-col">
+        <CollapsibleContent>
+          <CardContent className="flex-1 p-0 flex flex-col min-h-96">
         {/* Messages */}
         <ScrollArea className="flex-1 p-4">
           <div className="space-y-4">
@@ -224,25 +236,33 @@ export function ChatPanel() {
           </div>
         </div>
 
-        {/* Input */}
-        <div className="p-4 border-t">
-          <div className="flex gap-2">
-            <Input
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Ask to refine the story..."
-              onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-            />
-            <Button 
-              onClick={sendMessage} 
-              disabled={!inputValue.trim() || isTyping}
-              size="icon"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </CardContent>
+            {/* Enhanced Input */}
+            <div className="p-4 border-t">
+              <div className="space-y-2">
+                <Textarea
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  placeholder="Ask me to strengthen criteria, explore edge cases, or adjust points…"
+                  onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendMessage())}
+                  rows={3}
+                  className="resize-none"
+                />
+                <div className="flex justify-end">
+                  <Button 
+                    onClick={sendMessage} 
+                    disabled={!inputValue.trim() || isTyping}
+                    size="sm"
+                    className="gap-2"
+                  >
+                    <Send className="h-3 w-3" />
+                    Send
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </CollapsibleContent>
+      </Collapsible>
     </div>
   );
 }
