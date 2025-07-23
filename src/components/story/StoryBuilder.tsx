@@ -30,6 +30,7 @@ import {
   Send,
   AlertCircle,
   Plus,
+  Minus,
   History
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -442,17 +443,51 @@ export function StoryBuilder() {
               </div>
 
               <div>
-                <Label>Acceptance Criteria</Label>
+                <div className="flex items-center justify-between">
+                  <Label>Acceptance Criteria</Label>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setStory(prev => ({ 
+                      ...prev, 
+                      acceptanceCriteria: [...prev.acceptanceCriteria, ""] 
+                    }))}
+                    className="gap-1 text-xs"
+                  >
+                    <Plus className="h-3 w-3" />
+                    Add Criterion
+                  </Button>
+                </div>
                 <div className="space-y-2 mt-2">
                   {story.acceptanceCriteria.map((criterion, index) => (
                     <div key={index} className="flex items-center gap-2">
                       <CheckCircle className="h-4 w-4 text-status-ready flex-shrink-0" />
-                      <span className="text-sm">{criterion}</span>
+                      <Input
+                        value={criterion}
+                        onChange={(e) => {
+                          const newCriteria = [...story.acceptanceCriteria];
+                          newCriteria[index] = e.target.value;
+                          setStory(prev => ({ ...prev, acceptanceCriteria: newCriteria }));
+                        }}
+                        placeholder="Enter acceptance criterion..."
+                        className="text-sm flex-1"
+                      />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          const newCriteria = story.acceptanceCriteria.filter((_, i) => i !== index);
+                          setStory(prev => ({ ...prev, acceptanceCriteria: newCriteria }));
+                        }}
+                        className="p-1 h-8 w-8"
+                      >
+                        <Minus className="h-3 w-3" />
+                      </Button>
                     </div>
                   ))}
                   {story.acceptanceCriteria.length === 0 && (
                     <p className="text-sm text-muted-foreground italic">
-                      Generate a story to see acceptance criteria
+                      Generate a story or click "Add Criterion" to add acceptance criteria
                     </p>
                   )}
                 </div>
