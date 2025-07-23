@@ -63,7 +63,9 @@ interface UploadedFile {
 
 export function StoryBuilder() {
   const [rawInput, setRawInput] = useState("");
+  const [customPrompt, setCustomPrompt] = useState("");
   const [savedInput, setSavedInput] = useState(""); // For restart functionality
+  const [savedCustomPrompt, setSavedCustomPrompt] = useState(""); // For restart functionality
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [showRawInput, setShowRawInput] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -100,6 +102,7 @@ export function StoryBuilder() {
     setIsGenerating(true);
     setShowRawInput(false);
     setSavedInput(rawInput); // Save for restart
+    setSavedCustomPrompt(customPrompt); // Save for restart
     
     // Simulate AI generation
     await new Promise(resolve => setTimeout(resolve, 2000));
@@ -187,7 +190,9 @@ export function StoryBuilder() {
       codeSnippets: []
     });
     setRawInput("");
+    setCustomPrompt("");
     setSavedInput("");
+    setSavedCustomPrompt("");
     setUploadedFiles([]);
     setShowRawInput(true);
     setHasDevNotes(false);
@@ -214,6 +219,7 @@ export function StoryBuilder() {
     setHasDevNotes(false);
     setDevNotesOpen(false);
     setRawInput(savedInput);
+    setCustomPrompt(savedCustomPrompt);
     
     // Auto-generate after restart
     await generateStory();
@@ -316,6 +322,18 @@ export function StoryBuilder() {
                 onChange={(e) => setRawInput(e.target.value)}
                 placeholder="Paste specs or click to upload reference files"
                 rows={4}
+                className="mt-2"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="custom-prompt">Custom Prompt</Label>
+              <Textarea 
+                id="custom-prompt"
+                value={customPrompt}
+                onChange={(e) => setCustomPrompt(e.target.value)}
+                placeholder="Enter any specific instructions or tone for this story…"
+                rows={2}
                 className="mt-2"
               />
             </div>
