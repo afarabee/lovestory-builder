@@ -95,36 +95,6 @@ export function ProjectSidebar() {
 
   return (
     <div className="h-full flex flex-col p-4 space-y-4">
-      {/* Project Overview */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <FolderOpen className="h-5 w-5" />
-            Project Overview
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div>
-            <h3 className="font-medium">{projectInfo.name}</h3>
-            <p className="text-sm text-muted-foreground">{projectInfo.description}</p>
-          </div>
-          
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span>Progress</span>
-              <span>{projectInfo.completedStories}/{projectInfo.storiesCount} stories</span>
-            </div>
-            <Progress value={completionPercentage} className="h-2" />
-          </div>
-
-          <div className="flex gap-2">
-            <Badge variant="outline" className="text-xs">
-              {Math.round(completionPercentage)}% Complete
-            </Badge>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Quick Actions */}
       <Card>
         <CardHeader className="pb-3">
@@ -158,6 +128,21 @@ export function ProjectSidebar() {
                 <FileText className="h-4 w-4" />
                 Export to ADO
               </Button>
+            </div>
+          </div>
+
+          {/* Global Metrics */}
+          <div>
+            <h4 className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Global Metrics</h4>
+            <div className="space-y-1 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Total Stories:</span>
+                <span className="font-medium">12</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Avg. Points:</span>
+                <span className="font-medium">8</span>
+              </div>
             </div>
           </div>
 
