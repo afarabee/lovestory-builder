@@ -91,6 +91,7 @@ export function StoryBuilder() {
   const [isGeneratingDevNotes, setIsGeneratingDevNotes] = useState(false);
   const [hasDevNotes, setHasDevNotes] = useState(false);
   const [devNotesOpen, setDevNotesOpen] = useState(false);
+  const [showTestData, setShowTestData] = useState(false);
   const [testDataPanels, setTestDataPanels] = useState({
     userInputs: true,
     edgeCases: true,
@@ -587,158 +588,186 @@ export function StoryBuilder() {
 
         {/* Interactive Test Data Sidebar */}
         <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Interactive Test Data</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Sample Inputs */}
-              <Collapsible open={testDataPanels.userInputs} onOpenChange={(open) => setTestDataPanels(prev => ({ ...prev, userInputs: open }))}>
-                <CollapsibleTrigger asChild>
-                  <div className="flex items-center justify-between cursor-pointer">
-                    <h4 className="font-medium text-sm">Sample Inputs</h4>
-                    <div className="flex items-center gap-1">
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          refreshTestData('userInputs');
-                        }}
-                        className="p-1"
-                      >
-                        <RefreshCw className="h-3 w-3" />
-                      </Button>
-                      {testDataPanels.userInputs ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-                    </div>
-                  </div>
-                </CollapsibleTrigger>
-                <CollapsibleContent className="mt-2">
-                  <div className="space-y-1">
-                    {testData.userInputs.map((input, index) => (
-                      <div key={index} className="text-xs bg-muted p-2 rounded">
-                        {input}
+          {!showTestData ? (
+            // Collapsed State - Show Test Data Button
+            <Card>
+              <CardContent className="p-4">
+                <Button 
+                  onClick={() => setShowTestData(true)}
+                  variant="outline"
+                  className="w-full gap-2"
+                >
+                  <Database className="h-4 w-4" />
+                  Show Test Data
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            // Expanded State - Full Test Data Panel
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg">Interactive Test Data</CardTitle>
+                  <Button 
+                    onClick={() => setShowTestData(false)}
+                    variant="ghost"
+                    size="sm"
+                    className="gap-2"
+                  >
+                    Hide Test Data
+                    <ChevronUp className="h-3 w-3" />
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Sample Inputs */}
+                <Collapsible open={testDataPanels.userInputs} onOpenChange={(open) => setTestDataPanels(prev => ({ ...prev, userInputs: open }))}>
+                  <CollapsibleTrigger asChild>
+                    <div className="flex items-center justify-between cursor-pointer">
+                      <h4 className="font-medium text-sm">Sample Inputs</h4>
+                      <div className="flex items-center gap-1">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            refreshTestData('userInputs');
+                          }}
+                          className="p-1"
+                        >
+                          <RefreshCw className="h-3 w-3" />
+                        </Button>
+                        {testDataPanels.userInputs ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
                       </div>
-                    ))}
-                    {testData.userInputs.length === 0 && (
-                      <p className="text-xs text-muted-foreground italic">Generate story to see sample inputs</p>
-                    )}
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
-
-              <Separator />
-
-              {/* Edge Cases */}
-              <Collapsible open={testDataPanels.edgeCases} onOpenChange={(open) => setTestDataPanels(prev => ({ ...prev, edgeCases: open }))}>
-                <CollapsibleTrigger asChild>
-                  <div className="flex items-center justify-between cursor-pointer">
-                    <h4 className="font-medium text-sm">Edge Cases</h4>
-                    <div className="flex items-center gap-1">
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          refreshTestData('edgeCases');
-                        }}
-                        className="p-1"
-                      >
-                        <RefreshCw className="h-3 w-3" />
-                      </Button>
-                      {testDataPanels.edgeCases ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
                     </div>
-                  </div>
-                </CollapsibleTrigger>
-                <CollapsibleContent className="mt-2">
-                  <div className="space-y-1">
-                    {testData.edgeCases.map((edge, index) => (
-                      <div key={index} className="text-xs bg-warning/10 p-2 rounded border border-warning/20">
-                        {edge}
-                      </div>
-                    ))}
-                    {testData.edgeCases.length === 0 && (
-                      <p className="text-xs text-muted-foreground italic">Generate story to see edge cases</p>
-                    )}
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
-
-              <Separator />
-
-              {/* API Mocks */}
-              <Collapsible open={testDataPanels.apiMocks} onOpenChange={(open) => setTestDataPanels(prev => ({ ...prev, apiMocks: open }))}>
-                <CollapsibleTrigger asChild>
-                  <div className="flex items-center justify-between cursor-pointer">
-                    <h4 className="font-medium text-sm">API Mocks</h4>
-                    <div className="flex items-center gap-1">
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          refreshTestData('apiResponses');
-                        }}
-                        className="p-1"
-                      >
-                        <RefreshCw className="h-3 w-3" />
-                      </Button>
-                      {testDataPanels.apiMocks ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-2">
+                    <div className="space-y-1">
+                      {testData.userInputs.map((input, index) => (
+                        <div key={index} className="text-xs bg-muted p-2 rounded">
+                          {input}
+                        </div>
+                      ))}
+                      {testData.userInputs.length === 0 && (
+                        <p className="text-xs text-muted-foreground italic">Generate story to see sample inputs</p>
+                      )}
                     </div>
-                  </div>
-                </CollapsibleTrigger>
-                <CollapsibleContent className="mt-2">
-                  <div className="space-y-1">
-                    {testData.apiResponses.map((response, index) => (
-                      <div key={index} className="text-xs bg-muted p-2 rounded">
-                        <pre className="whitespace-pre-wrap">{JSON.stringify(response, null, 2)}</pre>
+                  </CollapsibleContent>
+                </Collapsible>
+
+                <Separator />
+
+                {/* Edge Cases */}
+                <Collapsible open={testDataPanels.edgeCases} onOpenChange={(open) => setTestDataPanels(prev => ({ ...prev, edgeCases: open }))}>
+                  <CollapsibleTrigger asChild>
+                    <div className="flex items-center justify-between cursor-pointer">
+                      <h4 className="font-medium text-sm">Edge Cases</h4>
+                      <div className="flex items-center gap-1">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            refreshTestData('edgeCases');
+                          }}
+                          className="p-1"
+                        >
+                          <RefreshCw className="h-3 w-3" />
+                        </Button>
+                        {testDataPanels.edgeCases ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
                       </div>
-                    ))}
-                    {testData.apiResponses.length === 0 && (
-                      <p className="text-xs text-muted-foreground italic">Generate story to see API mocks</p>
-                    )}
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
-
-              <Separator />
-
-              {/* Code Snippets */}
-              <Collapsible open={testDataPanels.codeSnippets} onOpenChange={(open) => setTestDataPanels(prev => ({ ...prev, codeSnippets: open }))}>
-                <CollapsibleTrigger asChild>
-                  <div className="flex items-center justify-between cursor-pointer">
-                    <h4 className="font-medium text-sm">Code Snippets</h4>
-                    <div className="flex items-center gap-1">
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          refreshTestData('codeSnippets');
-                        }}
-                        className="p-1"
-                      >
-                        <RefreshCw className="h-3 w-3" />
-                      </Button>
-                      {testDataPanels.codeSnippets ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
                     </div>
-                  </div>
-                </CollapsibleTrigger>
-                <CollapsibleContent className="mt-2">
-                  <div className="space-y-1">
-                    {testData.codeSnippets.map((snippet, index) => (
-                      <div key={index} className="text-xs bg-muted p-2 rounded">
-                        <pre className="whitespace-pre-wrap">{snippet}</pre>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-2">
+                    <div className="space-y-1">
+                      {testData.edgeCases.map((edge, index) => (
+                        <div key={index} className="text-xs bg-warning/10 p-2 rounded border border-warning/20">
+                          {edge}
+                        </div>
+                      ))}
+                      {testData.edgeCases.length === 0 && (
+                        <p className="text-xs text-muted-foreground italic">Generate story to see edge cases</p>
+                      )}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+
+                <Separator />
+
+                {/* API Mocks */}
+                <Collapsible open={testDataPanels.apiMocks} onOpenChange={(open) => setTestDataPanels(prev => ({ ...prev, apiMocks: open }))}>
+                  <CollapsibleTrigger asChild>
+                    <div className="flex items-center justify-between cursor-pointer">
+                      <h4 className="font-medium text-sm">API Mocks</h4>
+                      <div className="flex items-center gap-1">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            refreshTestData('apiResponses');
+                          }}
+                          className="p-1"
+                        >
+                          <RefreshCw className="h-3 w-3" />
+                        </Button>
+                        {testDataPanels.apiMocks ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
                       </div>
-                    ))}
-                    {testData.codeSnippets.length === 0 && (
-                      <p className="text-xs text-muted-foreground italic">Generate dev notes to see code snippets</p>
-                    )}
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
-            </CardContent>
-          </Card>
+                    </div>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-2">
+                    <div className="space-y-1">
+                      {testData.apiResponses.map((response, index) => (
+                        <div key={index} className="text-xs bg-muted p-2 rounded">
+                          <pre className="whitespace-pre-wrap">{JSON.stringify(response, null, 2)}</pre>
+                        </div>
+                      ))}
+                      {testData.apiResponses.length === 0 && (
+                        <p className="text-xs text-muted-foreground italic">Generate story to see API mocks</p>
+                      )}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+
+                <Separator />
+
+                {/* Code Snippets */}
+                <Collapsible open={testDataPanels.codeSnippets} onOpenChange={(open) => setTestDataPanels(prev => ({ ...prev, codeSnippets: open }))}>
+                  <CollapsibleTrigger asChild>
+                    <div className="flex items-center justify-between cursor-pointer">
+                      <h4 className="font-medium text-sm">Code Snippets</h4>
+                      <div className="flex items-center gap-1">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            refreshTestData('codeSnippets');
+                          }}
+                          className="p-1"
+                        >
+                          <RefreshCw className="h-3 w-3" />
+                        </Button>
+                        {testDataPanels.codeSnippets ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                      </div>
+                    </div>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-2">
+                    <div className="space-y-1">
+                      {testData.codeSnippets.map((snippet, index) => (
+                        <div key={index} className="text-xs bg-muted p-2 rounded">
+                          <pre className="whitespace-pre-wrap">{snippet}</pre>
+                        </div>
+                      ))}
+                      {testData.codeSnippets.length === 0 && (
+                        <p className="text-xs text-muted-foreground italic">Generate dev notes to see code snippets</p>
+                      )}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Version History Stub */}
           <Card>
