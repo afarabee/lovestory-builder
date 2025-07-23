@@ -251,23 +251,6 @@ export function ChatPanel() {
           </div>
         )}
 
-        {/* Quick Actions */}
-        <div className="p-4 border-t">
-          <div className="text-xs font-medium mb-2">Quick Actions</div>
-          <div className="grid grid-cols-2 gap-1">
-            {quickActions.map((action, index) => (
-              <Button
-                key={index}
-                variant="ghost"
-                size="sm"
-                className="text-xs h-8 justify-start"
-                onClick={action.action}
-              >
-                {action.label}
-              </Button>
-            ))}
-          </div>
-        </div>
 
             {/* Enhanced Input */}
             <div className="p-4 border-t">
@@ -298,6 +281,35 @@ export function ChatPanel() {
                     Send
                   </Button>
                 </div>
+                
+                {/* Quick Actions */}
+                <Collapsible>
+                  <CollapsibleTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-between text-xs font-medium h-8 px-0 hover:bg-accent/50 focus-visible:ring-1 focus-visible:ring-ring"
+                    >
+                      Quick Actions
+                      <ChevronDown className="h-3 w-3" />
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <div className="space-y-1 mt-2">
+                      {quickActions.map((action, index) => (
+                        <Button
+                          key={index}
+                          variant="ghost"
+                          size="sm"
+                          className="w-full text-xs h-8 justify-start focus-visible:ring-1 focus-visible:ring-ring"
+                          onClick={action.action}
+                        >
+                          {action.label}
+                        </Button>
+                      ))}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
               </div>
             </div>
           </div>
