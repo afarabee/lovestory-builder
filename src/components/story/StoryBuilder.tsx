@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -66,9 +66,10 @@ interface UploadedFile {
 interface StoryBuilderProps {
   showChat?: boolean;
   onToggleChat?: () => void;
+  onSetApplySuggestionHandler?: (handler: (type: string, content: string) => void) => void;
 }
 
-export function StoryBuilder({ showChat = false, onToggleChat }: StoryBuilderProps = {}) {
+export function StoryBuilder({ showChat = false, onToggleChat, onSetApplySuggestionHandler }: StoryBuilderProps = {}) {
   const [rawInput, setRawInput] = useState("");
   const [customPrompt, setCustomPrompt] = useState("");
   const [savedInput, setSavedInput] = useState(""); // For restart functionality
@@ -98,7 +99,16 @@ export function StoryBuilder({ showChat = false, onToggleChat }: StoryBuilderPro
   const [isGeneratingDevNotes, setIsGeneratingDevNotes] = useState(false);
   const [hasDevNotes, setHasDevNotes] = useState(false);
   const [devNotesOpen, setDevNotesOpen] = useState(false);
+  const [chatHorizontallyCollapsed, setChatHorizontallyCollapsed] = useState(false);
+  const [appliedFieldId, setAppliedFieldId] = useState<string | null>(null);
   const [showTestData, setShowTestData] = useState(false);
+
+  // Register the apply suggestion handler
+  useEffect(() => {
+    if (onSetApplySuggestionHandler) {
+      onSetApplySuggestionHandler(handleApplySuggestion);
+    }
+  }, [onSetApplySuggestionHandler]);
   const [testDataPanels, setTestDataPanels] = useState({
     userInputs: true,
     edgeCases: true,
@@ -269,6 +279,42 @@ export function StoryBuilder({ showChat = false, onToggleChat }: StoryBuilderPro
     console.log(`Refreshing ${section} test data`);
   };
 
+  const handleApplySuggestion = (type: string, content: string) => {
+    // Apply suggestion based on type
+    if (type === 'testing') {
+      // Add to edge cases
+      setTestData(prev => ({
+        ...prev,
+        edgeCases: [...prev.edgeCases, content.split('.')[0]] // Take first sentence as edge case
+      }));
+      flashField('edge-cases');
+    } else if (type === 'criteria') {
+      // Add to acceptance criteria
+      setStory(prev => ({
+        ...prev,
+        acceptanceCriteria: [...prev.acceptanceCriteria, content.split('.')[0]]
+      }));
+      flashField('acceptance-criteria');
+    } else if (type === 'story') {
+      // Update story points if content mentions points
+      if (content.toLowerCase().includes('point')) {
+        const pointsMatch = content.match(/(\d+)\s*point/);
+        if (pointsMatch) {
+          setStory(prev => ({
+            ...prev,
+            storyPoints: parseInt(pointsMatch[1])
+          }));
+          flashField('story-points');
+        }
+      }
+    }
+  };
+
+  const flashField = (fieldId: string) => {
+    setAppliedFieldId(fieldId);
+    setTimeout(() => setAppliedFieldId(null), 2000);
+  };
+
   const StatusIcon = ({ status }: { status: string }) => {
     switch (status) {
       case 'ready':
@@ -295,6 +341,15 @@ export function StoryBuilder({ showChat = false, onToggleChat }: StoryBuilderPro
         </div>
         
         <div className="flex items-center gap-2">
+          <Button
+            onClick={onToggleChat}
+            variant={showChat ? "default" : "outline"}
+            className="gap-2"
+            title="Open Story Refinement Chat"
+          >
+            <MessageSquare className="h-4 w-4" />
+            Chat
+          </Button>
           <Button 
             onClick={newStory}
             variant="outline"
@@ -311,15 +366,6 @@ export function StoryBuilder({ showChat = false, onToggleChat }: StoryBuilderPro
           >
             <RotateCcw className="h-4 w-4" />
             Restart Story
-          </Button>
-          <Button
-            onClick={onToggleChat}
-            variant={showChat ? "default" : "outline"}
-            className="gap-2"
-            title="Open Story Refinement Chat"
-          >
-            <MessageSquare className="h-4 w-4" />
-            Chat
           </Button>
         </div>
       </div>
@@ -475,18 +521,21 @@ export function StoryBuilder({ showChat = false, onToggleChat }: StoryBuilderPro
                 </div>
                 <div className="space-y-2 mt-2">
                   {story.acceptanceCriteria.map((criterion, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <CheckCircle className="h-4 w-4 text-status-ready flex-shrink-0" />
-                      <Input
-                        value={criterion}
-                        onChange={(e) => {
-                          const newCriteria = [...story.acceptanceCriteria];
-                          newCriteria[index] = e.target.value;
-                          setStory(prev => ({ ...prev, acceptanceCriteria: newCriteria }));
-                        }}
-                        placeholder="Enter acceptance criterion..."
-                        className="text-sm flex-1"
-                      />
+                      <div key={index} className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-status-ready flex-shrink-0" />
+                        <Input
+                          value={criterion}
+                          onChange={(e) => {
+                            const newCriteria = [...story.acceptanceCriteria];
+                            newCriteria[index] = e.target.value;
+                            setStory(prev => ({ ...prev, acceptanceCriteria: newCriteria }));
+                          }}
+                          placeholder="Enter acceptance criterion..."
+                          className={cn(
+                            "text-sm flex-1",
+                            appliedFieldId === 'acceptance-criteria' && "ring-2 ring-primary animate-pulse"
+                          )}
+                        />
                       <Button
                         variant="ghost"
                         size="sm"
@@ -512,7 +561,10 @@ export function StoryBuilder({ showChat = false, onToggleChat }: StoryBuilderPro
                 <div>
                   <Label htmlFor="story-points">Story Points</Label>
                   <Select value={story.storyPoints.toString()} onValueChange={(value) => setStory(prev => ({ ...prev, storyPoints: parseInt(value) }))}>
-                    <SelectTrigger className="w-24">
+                    <SelectTrigger className={cn(
+                      "w-24",
+                      appliedFieldId === 'story-points' && "ring-2 ring-primary animate-pulse"
+                    )}>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -731,7 +783,10 @@ export function StoryBuilder({ showChat = false, onToggleChat }: StoryBuilderPro
                   <CollapsibleContent className="mt-2">
                     <div className="space-y-1">
                       {testData.edgeCases.map((edge, index) => (
-                        <div key={index} className="text-xs bg-warning/10 p-2 rounded border border-warning/20">
+                        <div key={index} className={cn(
+                          "text-xs bg-warning/10 p-2 rounded border border-warning/20",
+                          appliedFieldId === 'edge-cases' && "ring-2 ring-primary animate-pulse"
+                        )}>
                           {edge}
                         </div>
                       ))}

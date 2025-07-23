@@ -36,7 +36,13 @@ interface TestDataUpdate {
   content: string;
 }
 
-export function ChatPanel() {
+interface ChatPanelProps {
+  onApplySuggestion?: (type: string, content: string) => void;
+  isHorizontallyCollapsed?: boolean;
+  onHorizontalToggle?: () => void;
+}
+
+export function ChatPanel({ onApplySuggestion, isHorizontallyCollapsed = false, onHorizontalToggle }: ChatPanelProps = {}) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -131,6 +137,12 @@ export function ChatPanel() {
 
   const applySuggestion = (message: ChatMessage) => {
     const suggestionType = message.context || 'story';
+    
+    // Apply the suggestion to the appropriate panel
+    if (onApplySuggestion) {
+      onApplySuggestion(suggestionType, message.content);
+    }
+    
     toast({
       title: "Suggestion Applied",
       description: `${suggestionType.replace('-', ' ')} has been updated with AI suggestions.`,
@@ -144,14 +156,41 @@ export function ChatPanel() {
     { label: "Technical details", action: () => setInputValue("What technical considerations should developers know?") }
   ];
 
+  if (isHorizontallyCollapsed) {
+    return (
+      <div className="w-8 h-full bg-muted border-l flex flex-col items-center">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onHorizontalToggle}
+          className="w-full h-12 flex flex-col items-center justify-center text-xs rotate-90 whitespace-nowrap"
+          title="Open chat panel"
+        >
+          Chat ▶
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full flex flex-col">
       <CardHeader className="border-b">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <MessageSquare className="h-5 w-5 text-primary" />
-            Story Refinement Chat
-          </CardTitle>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onHorizontalToggle}
+              className="h-6 w-6"
+              title="Collapse chat panel"
+            >
+              ⟨
+            </Button>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <MessageSquare className="h-5 w-5 text-primary" />
+              Story Refinement Chat
+            </CardTitle>
+          </div>
           <Button
             variant="ghost"
             size="icon"
