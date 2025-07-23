@@ -312,6 +312,15 @@ export function StoryBuilder({ showChat = false, onToggleChat }: StoryBuilderPro
             <RotateCcw className="h-4 w-4" />
             Restart Story
           </Button>
+          <Button
+            onClick={onToggleChat}
+            variant={showChat ? "default" : "outline"}
+            className="gap-2"
+            title="Open Story Refinement Chat"
+          >
+            <MessageSquare className="h-4 w-4" />
+            Chat
+          </Button>
         </div>
       </div>
 

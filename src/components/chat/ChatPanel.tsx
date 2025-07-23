@@ -146,21 +146,28 @@ export function ChatPanel() {
 
   return (
     <div className="h-full flex flex-col">
+      <CardHeader className="border-b">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <MessageSquare className="h-5 w-5 text-primary" />
+            Story Refinement Chat
+          </CardTitle>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="h-6 w-6"
+            title={isCollapsed ? "Expand chat panel" : "Collapse chat panel"}
+          >
+            {isCollapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+          </Button>
+        </div>
+      </CardHeader>
+      
       <Collapsible open={!isCollapsed} onOpenChange={(open) => setIsCollapsed(!open)}>
-        <CollapsibleTrigger asChild>
-          <CardHeader className="border-b cursor-pointer hover:bg-accent/50 transition-colors">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <MessageSquare className="h-5 w-5 text-primary" />
-                Story Refinement Chat
-              </CardTitle>
-              {isCollapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
-            </div>
-          </CardHeader>
-        </CollapsibleTrigger>
 
         <CollapsibleContent>
-          <CardContent className="flex-1 p-0 flex flex-col min-h-96">
+          <div className="flex-1 p-0 flex flex-col min-h-96">
         {/* Messages */}
         <ScrollArea className="flex-1 p-4">
           <div className="space-y-4">
@@ -293,7 +300,7 @@ export function ChatPanel() {
                 </div>
               </div>
             </div>
-          </CardContent>
+          </div>
         </CollapsibleContent>
       </Collapsible>
     </div>
