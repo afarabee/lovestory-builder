@@ -556,18 +556,6 @@ export function StoryBuilder({ showChat = false, onToggleChat }: StoryBuilderPro
                         {isGeneratingDevNotes ? <RefreshCw className="h-3 w-3 animate-spin" /> : <Code className="h-3 w-3" />}
                         {isGeneratingDevNotes ? "Scanning GitHub..." : "Generate Dev Notes"}
                       </Button>
-                      <Button
-                        variant={showChat ? "default" : "outline"}
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onToggleChat?.();
-                        }}
-                        className="gap-2"
-                      >
-                        <MessageSquare className="h-3 w-3" />
-                        {showChat ? "Close Chat" : "Open Chat"}
-                      </Button>
                       {devNotesOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                     </div>
                   </div>

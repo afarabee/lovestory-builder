@@ -283,7 +283,7 @@ export function ChatPanel() {
                 </div>
                 
                 {/* Quick Actions */}
-                <Collapsible>
+                <Collapsible defaultOpen={true}>
                   <CollapsibleTrigger asChild>
                     <Button
                       variant="ghost"
