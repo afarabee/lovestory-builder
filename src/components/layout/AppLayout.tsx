@@ -79,7 +79,11 @@ export function AppLayout({
               variant="ghost" 
               size="icon-sm" 
               title="Settings"
-              onClick={() => setShowSettings(true)}
+              onClick={() => {
+                console.log('Settings button clicked', showSettings);
+                setShowSettings(true);
+                console.log('Settings state after update', !showSettings);
+              }}
             >
               <Settings className="h-4 w-4" />
             </Button>
