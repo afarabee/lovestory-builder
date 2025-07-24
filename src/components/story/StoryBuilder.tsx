@@ -32,9 +32,11 @@ import {
   Plus,
   Minus,
   History,
-  MessageSquare
+  MessageSquare,
+  Settings as SettingsIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SettingsModal } from "@/components/settings/SettingsModal";
 
 interface UserStory {
   id: string;
@@ -70,6 +72,8 @@ interface StoryBuilderProps {
 }
 
 export function StoryBuilder({ showChat = false, onToggleChat, onSetApplySuggestionHandler }: StoryBuilderProps = {}) {
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [dirtyCriteria, setDirtyCriteria] = useState(false);
   const [rawInput, setRawInput] = useState("");
   const [customPrompt, setCustomPrompt] = useState("");
   const [savedInput, setSavedInput] = useState(""); // For restart functionality
@@ -109,6 +113,11 @@ export function StoryBuilder({ showChat = false, onToggleChat, onSetApplySuggest
       onSetApplySuggestionHandler(handleApplySuggestion);
     }
   }, [onSetApplySuggestionHandler]);
+
+  // Track changes to title/description for dirty criteria indicator
+  useEffect(() => {
+    setDirtyCriteria(true);
+  }, [story.title, story.description]);
   const [testDataPanels, setTestDataPanels] = useState({
     userInputs: true,
     edgeCases: true,
@@ -315,6 +324,23 @@ export function StoryBuilder({ showChat = false, onToggleChat, onSetApplySuggest
     setTimeout(() => setAppliedFieldId(null), 2000);
   };
 
+  const regenerateCriteria = async () => {
+    setIsGenerating(true);
+    // Simulate LLM call to regenerate criteria
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    const newCriteria = [
+      `User can enter email and password on registration form`,
+      `System validates email format and password strength`,
+      `Verification email is sent upon successful registration`,
+      `User can complete registration by clicking verification link`,
+      `Error messages are displayed for invalid inputs`
+    ];
+    setStory(prev => ({ ...prev, acceptanceCriteria: newCriteria }));
+    flashField('acceptance-criteria');
+    setIsGenerating(false);
+    setDirtyCriteria(false);
+  };
+
   const StatusIcon = ({ status }: { status: string }) => {
     switch (status) {
       case 'ready':
@@ -329,7 +355,12 @@ export function StoryBuilder({ showChat = false, onToggleChat, onSetApplySuggest
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <>
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+      />
+      <div className="p-6 space-y-6">
       {/* Progress Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -341,6 +372,14 @@ export function StoryBuilder({ showChat = false, onToggleChat, onSetApplySuggest
         </div>
         
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setIsSettingsOpen(true)}
+            title="Project Settings"
+            className="gap-2"
+          >
+            <SettingsIcon className="h-4 w-4" /> Settings
+          </Button>
           <Button
             onClick={onToggleChat}
             variant={showChat ? "default" : "outline"}
@@ -505,21 +544,44 @@ export function StoryBuilder({ showChat = false, onToggleChat, onSetApplySuggest
 
               <div>
                 <div className="flex items-center justify-between">
-                  <Label>Acceptance Criteria</Label>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setStory(prev => ({ 
-                      ...prev, 
-                      acceptanceCriteria: [...prev.acceptanceCriteria, ""] 
-                    }))}
-                    className="gap-1 text-xs"
-                  >
-                    <Plus className="h-3 w-3" />
-                    Add Criterion
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Label>Acceptance Criteria</Label>
+                    {dirtyCriteria && (
+                      <Badge variant="outline" title="Criteria may be out of sync" className="text-xs">
+                        ⚠️
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={regenerateCriteria}
+                      className="gap-1 text-xs"
+                      title="Refresh acceptance criteria based on current Title & Description"
+                      disabled={isGenerating}
+                    >
+                      <RefreshCw className={cn("h-4 w-4", isGenerating && "animate-spin")} />
+                      Regenerate Criteria
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setStory(prev => ({ 
+                        ...prev, 
+                        acceptanceCriteria: [...prev.acceptanceCriteria, ""] 
+                      }))}
+                      className="gap-1 text-xs"
+                    >
+                      <Plus className="h-3 w-3" />
+                      Add Criterion
+                    </Button>
+                  </div>
                 </div>
-                <div className="space-y-2 mt-2">
+                <div className={cn(
+                  appliedFieldId === 'acceptance-criteria' && "ring-2 ring-primary animate-pulse",
+                  "space-y-2 mt-2"
+                )}>
                   {story.acceptanceCriteria.map((criterion, index) => (
                       <div key={index} className="flex items-center gap-2">
                         <CheckCircle className="h-4 w-4 text-status-ready flex-shrink-0" />
@@ -903,5 +965,6 @@ export function StoryBuilder({ showChat = false, onToggleChat, onSetApplySuggest
         </div>
       </div>
     </div>
+    </>
   );
 }
