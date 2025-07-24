@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { 
   Settings, 
@@ -14,11 +14,9 @@ import {
   ChevronRight, 
   FileText, 
   GitBranch, 
-  Zap, 
   Upload,
   Eye,
-  Trash2,
-  X
+  Trash2
 } from "lucide-react";
 
 interface SettingsModalProps {
@@ -81,35 +79,38 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     { id: '3', name: 'User_Research.docx', size: '3.2 MB', uploaded: '2 weeks ago' }
   ]);
 
-  if (!isOpen) return null;
-
   const toggleSection = (section: keyof typeof activeSection) => {
     setActiveSection(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
   const handleSave = () => {
-    toast({
-      title: "Settings saved",
-      description: "Your project settings have been updated successfully.",
-    });
+    try {
+      // Simulate saving settings
+      toast({
+        title: "Settings saved",
+        description: "Your project settings have been updated successfully.",
+      });
+      onClose();
+    } catch (error) {
+      toast({
+        title: "Error saving settings",
+        description: "Failed to save settings. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
-    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-4xl max-h-[90vh] overflow-hidden">
-        <CardHeader className="border-b">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-xl flex items-center gap-2">
-              <Settings className="h-5 w-5" />
-              Project Settings
-            </CardTitle>
-            <Button variant="ghost" size="icon" onClick={onClose}>
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        </CardHeader>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="w-full max-w-4xl max-h-[90vh] overflow-hidden">
+        <DialogHeader>
+          <DialogTitle className="text-xl flex items-center gap-2">
+            <Settings className="h-5 w-5" />
+            Project Settings
+          </DialogTitle>
+        </DialogHeader>
 
-        <CardContent className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+        <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
           {/* Project Context */}
           <Collapsible open={activeSection.project} onOpenChange={(open) => setActiveSection(prev => ({ ...prev, project: open }))}>
             <CollapsibleTrigger className="flex items-center justify-between w-full p-4 text-left font-medium border rounded-lg hover:bg-muted/50" aria-label="Toggle Project Context">
@@ -294,7 +295,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               </div>
             </CollapsibleContent>
           </Collapsible>
-        </CardContent>
+        </div>
 
         {/* Footer */}
         <div className="border-t p-4 flex justify-end gap-2">
@@ -305,7 +306,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             Save Settings
           </Button>
         </div>
-      </Card>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
