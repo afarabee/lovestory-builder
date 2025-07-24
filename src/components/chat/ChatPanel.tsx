@@ -29,6 +29,7 @@ interface ChatMessage {
   content: string;
   timestamp: Date;
   context?: 'story' | 'criteria' | 'testing' | 'dev-notes';
+  suggestion?: string;
 }
 
 interface TestDataUpdate {
@@ -50,7 +51,8 @@ export function ChatPanel({ onApplySuggestion, isHorizontallyCollapsed = false, 
       type: 'ai',
       content: "How can I help refine your story? I can strengthen acceptance criteria, explore edge cases, adjust story points, or provide technical insights.",
       timestamp: new Date(),
-      context: 'story'
+      context: 'story',
+      suggestion: ""
     }
   ]);
 
@@ -76,12 +78,16 @@ export function ChatPanel({ onApplySuggestion, isHorizontallyCollapsed = false, 
     // Simulate AI response with test data updates
     await new Promise(resolve => setTimeout(resolve, 1500));
 
+    // Generate response with structured JSON format
+    const responseData = generateContextualResponse(inputValue);
+    
     const aiResponse: ChatMessage = {
       id: (Date.now() + 1).toString(),
       type: 'ai',
-      content: generateContextualResponse(inputValue),
+      content: responseData.reply,
       timestamp: new Date(),
-      context: detectContext(inputValue)
+      context: detectContext(inputValue),
+      suggestion: responseData.suggestion || undefined
     };
 
     // Generate test data updates based on context
@@ -96,22 +102,34 @@ export function ChatPanel({ onApplySuggestion, isHorizontallyCollapsed = false, 
     setIsTyping(false);
   };
 
-  const generateContextualResponse = (input: string): string => {
+  const generateContextualResponse = (input: string): { reply: string; suggestion: string } => {
     const lowerInput = input.toLowerCase();
     
     if (lowerInput.includes('edge case') || lowerInput.includes('error')) {
-      return "I've identified a new edge case and added it to your test data. For the email validation, we should also consider users entering special characters like '+' or international characters. Would you like me to add acceptance criteria for internationalization?";
+      return {
+        reply: "I've identified a new edge case and added it to your test data. For the email validation, we should also consider users entering special characters like '+' or international characters. Would you like me to add acceptance criteria for internationalization?",
+        suggestion: "User submits email with special characters like + or international domains"
+      };
     }
     
     if (lowerInput.includes('points') || lowerInput.includes('estimate')) {
-      return "Based on the complexity of email verification and the need for robust validation, I'd recommend keeping this at 5 story points. This accounts for frontend validation, backend API integration, and email service setup. Should we break this into smaller stories?";
+      return {
+        reply: "Based on the complexity of email verification and the need for robust validation, I'd recommend keeping this at 5 story points. This accounts for frontend validation, backend API integration, and email service setup. Should we break this into smaller stories?",
+        suggestion: "Adjust story points to 8 considering email service integration complexity"
+      };
     }
     
     if (lowerInput.includes('criteria') || lowerInput.includes('acceptance')) {
-      return "I can strengthen the acceptance criteria. Would you like me to add specific validation rules for password complexity, or focus on the email verification flow? I can also add criteria for accessibility and error handling.";
+      return {
+        reply: "I can strengthen the acceptance criteria. Would you like me to add specific validation rules for password complexity, or focus on the email verification flow? I can also add criteria for accessibility and error handling.",
+        suggestion: "System displays real-time password strength indicator with specific requirements"
+      };
     }
 
-    return "I understand you want to refine the story. Can you be more specific about which aspect you'd like to improve? I can help with acceptance criteria, edge cases, technical implementation details, or story sizing.";
+    return {
+      reply: "I understand you want to refine the story. Can you be more specific about which aspect you'd like to improve? I can help with acceptance criteria, edge cases, technical implementation details, or story sizing.",
+      suggestion: ""
+    };
   };
 
   const detectContext = (input: string): ChatMessage['context'] => {
@@ -139,8 +157,8 @@ export function ChatPanel({ onApplySuggestion, isHorizontallyCollapsed = false, 
     const suggestionType = message.context || 'story';
     
     // Apply the suggestion to the appropriate panel
-    if (onApplySuggestion) {
-      onApplySuggestion(suggestionType, message.content);
+    if (onApplySuggestion && message.suggestion) {
+      onApplySuggestion(suggestionType, message.suggestion);
     }
     
     toast({
@@ -243,7 +261,7 @@ export function ChatPanel({ onApplySuggestion, isHorizontallyCollapsed = false, 
                     <span className="text-xs opacity-70">
                       {message.timestamp.toLocaleTimeString()}
                     </span>
-                    {message.type === 'ai' && (
+                    {message.type === 'ai' && message.suggestion && message.suggestion.trim() && (
                       <Button
                         variant="ghost"
                         size="sm"
