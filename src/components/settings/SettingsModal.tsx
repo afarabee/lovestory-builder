@@ -7,10 +7,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Settings, 
   ChevronDown, 
-  ChevronUp, 
+  ChevronRight, 
   FileText, 
   GitBranch, 
   Zap, 
@@ -46,8 +47,9 @@ interface IntegrationSettings {
 }
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
+  const { toast } = useToast();
   const [activeSection, setActiveSection] = useState({
-    project: true,
+    project: false,
     ai: false,
     integrations: false,
     fileLibrary: false
@@ -85,6 +87,13 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     setActiveSection(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
+  const handleSave = () => {
+    toast({
+      title: "Settings saved",
+      description: "Your project settings have been updated successfully.",
+    });
+  };
+
   return (
     <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-4xl max-h-[90vh] overflow-hidden">
@@ -100,253 +109,191 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           </div>
         </CardHeader>
 
-        <CardContent className="p-0">
-          <div className="grid grid-cols-4 h-[70vh]">
-            {/* Navigation Sidebar */}
-            <div className="border-r bg-muted/30 p-4">
-              <nav className="space-y-2">
-                <Button 
-                  variant={activeSection.project ? "default" : "ghost"} 
-                  className="w-full justify-start"
-                  onClick={() => toggleSection('project')}
-                >
-                  Project Context
-                </Button>
-                <Button 
-                  variant={activeSection.ai ? "default" : "ghost"} 
-                  className="w-full justify-start"
-                  onClick={() => toggleSection('ai')}
-                >
-                  AI Preferences
-                </Button>
-                <Button 
-                  variant={activeSection.integrations ? "default" : "ghost"} 
-                  className="w-full justify-start"
-                  onClick={() => toggleSection('integrations')}
-                >
-                  Integrations
-                </Button>
-                <Button 
-                  variant={activeSection.fileLibrary ? "default" : "ghost"} 
-                  className="w-full justify-start"
-                  onClick={() => toggleSection('fileLibrary')}
-                >
-                  File Library
-                </Button>
-              </nav>
-            </div>
+        <CardContent className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+          {/* Project Context */}
+          <Collapsible open={activeSection.project} onOpenChange={(open) => setActiveSection(prev => ({ ...prev, project: open }))}>
+            <CollapsibleTrigger className="flex items-center justify-between w-full p-4 text-left font-medium border rounded-lg hover:bg-muted/50" aria-label="Toggle Project Context">
+              <span>Project Context</span>
+              {activeSection.project ? (
+                <ChevronDown className="h-4 w-4" />
+              ) : (
+                <ChevronRight className="h-4 w-4" />
+              )}
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-2 p-4 border border-t-0 rounded-b-lg space-y-4">
+              <div>
+                <Label htmlFor="project-name">Project Name</Label>
+                <Input 
+                  id="project-name"
+                  value={projectSettings.name}
+                  onChange={(e) => setProjectSettings(prev => ({ ...prev, name: e.target.value }))}
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="project-description">Description</Label>
+                <Textarea 
+                  id="project-description"
+                  value={projectSettings.description}
+                  onChange={(e) => setProjectSettings(prev => ({ ...prev, description: e.target.value }))}
+                  rows={3}
+                />
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
 
-            {/* Content Area */}
-            <div className="col-span-3 overflow-y-auto">
-              {/* Project Context */}
-              {activeSection.project && (
-                <div className="p-6 space-y-6">
+          {/* AI Preferences */}
+          <Collapsible open={activeSection.ai} onOpenChange={(open) => setActiveSection(prev => ({ ...prev, ai: open }))}>
+            <CollapsibleTrigger className="flex items-center justify-between w-full p-4 text-left font-medium border rounded-lg hover:bg-muted/50" aria-label="Toggle AI Preferences">
+              <span>AI Preferences</span>
+              {activeSection.ai ? (
+                <ChevronDown className="h-4 w-4" />
+              ) : (
+                <ChevronRight className="h-4 w-4" />
+              )}
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-2 p-4 border border-t-0 rounded-b-lg space-y-4">
+              <div>
+                <Label htmlFor="ai-tone">Tone</Label>
+                <Select value={aiSettings.tone} onValueChange={(value: any) => setAiSettings(prev => ({ ...prev, tone: value }))}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="professional">Professional</SelectItem>
+                    <SelectItem value="casual">Casual</SelectItem>
+                    <SelectItem value="concise">Concise</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="ai-style">Style Guidelines</Label>
+                <Textarea 
+                  id="ai-style"
+                  value={aiSettings.style}
+                  onChange={(e) => setAiSettings(prev => ({ ...prev, style: e.target.value }))}
+                  rows={3}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="interaction-rules">Interaction Rules</Label>
+                <Textarea 
+                  id="interaction-rules"
+                  placeholder="Define how AI should interact with users..."
+                  rows={3}
+                />
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+
+          {/* Integrations */}
+          <Collapsible open={activeSection.integrations} onOpenChange={(open) => setActiveSection(prev => ({ ...prev, integrations: open }))}>
+            <CollapsibleTrigger className="flex items-center justify-between w-full p-4 text-left font-medium border rounded-lg hover:bg-muted/50" aria-label="Toggle Integrations">
+              <span>Integrations</span>
+              {activeSection.integrations ? (
+                <ChevronDown className="h-4 w-4" />
+              ) : (
+                <ChevronRight className="h-4 w-4" />
+              )}
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-2 p-4 border border-t-0 rounded-b-lg space-y-6">
+              {/* GitHub Section */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <GitBranch className="h-4 w-4" />
+                  <h4 className="font-medium">GitHub</h4>
+                  <Badge variant="default" className="text-xs">Connected</Badge>
+                </div>
+                <div className="space-y-2">
                   <div>
-                    <h3 className="text-lg font-semibold mb-4">Project Context</h3>
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="project-name">Project Name</Label>
-                        <Input 
-                          id="project-name"
-                          value={projectSettings.name}
-                          onChange={(e) => setProjectSettings(prev => ({ ...prev, name: e.target.value }))}
-                        />
-                      </div>
-                      
-                      <div>
-                        <Label htmlFor="project-description">Description</Label>
-                        <Textarea 
-                          id="project-description"
-                          value={projectSettings.description}
-                          onChange={(e) => setProjectSettings(prev => ({ ...prev, description: e.target.value }))}
-                          rows={3}
-                        />
-                      </div>
-
-                      <div>
-                        <Label htmlFor="project-domain">Domain Knowledge</Label>
-                        <Input 
-                          id="project-domain"
-                          value={projectSettings.domain}
-                          onChange={(e) => setProjectSettings(prev => ({ ...prev, domain: e.target.value }))}
-                          placeholder="Industry, technologies, key concepts..."
-                        />
-                      </div>
-
-                      <div>
-                        <Label htmlFor="custom-instructions">Custom Instructions for AI</Label>
-                        <Textarea 
-                          id="custom-instructions"
-                          value={projectSettings.customInstructions}
-                          onChange={(e) => setProjectSettings(prev => ({ ...prev, customInstructions: e.target.value }))}
-                          placeholder="Special considerations, coding standards, business rules..."
-                          rows={4}
-                        />
-                      </div>
+                    <Label htmlFor="github-repo">GitHub Repo URL</Label>
+                    <div className="flex gap-2">
+                      <Input 
+                        id="github-repo"
+                        value={integrationSettings.githubRepo}
+                        onChange={(e) => setIntegrationSettings(prev => ({ ...prev, githubRepo: e.target.value }))}
+                        className="flex-1"
+                      />
+                      <Button variant="outline" size="sm">Test Connection</Button>
                     </div>
                   </div>
                 </div>
-              )}
+              </div>
 
-              {/* AI Preferences */}
-              {activeSection.ai && (
-                <div className="p-6 space-y-6">
+              {/* Azure DevOps Section */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  <h4 className="font-medium">Azure DevOps</h4>
+                  <Badge variant="secondary" className="text-xs">Not Connected</Badge>
+                </div>
+                <div className="space-y-2">
                   <div>
-                    <h3 className="text-lg font-semibold mb-4">AI Preferences</h3>
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="ai-tone">Tone</Label>
-                        <Select value={aiSettings.tone} onValueChange={(value: any) => setAiSettings(prev => ({ ...prev, tone: value }))}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="professional">Professional</SelectItem>
-                            <SelectItem value="casual">Casual</SelectItem>
-                            <SelectItem value="technical">Technical</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div>
-                        <Label htmlFor="ai-style">Style Guidelines</Label>
-                        <Textarea 
-                          id="ai-style"
-                          value={aiSettings.style}
-                          onChange={(e) => setAiSettings(prev => ({ ...prev, style: e.target.value }))}
-                          rows={3}
-                        />
-                      </div>
-
-                      <div>
-                        <Label htmlFor="points-method">Story Points Methodology</Label>
-                        <Select value={aiSettings.pointsMethod} onValueChange={(value: any) => setAiSettings(prev => ({ ...prev, pointsMethod: value }))}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="fibonacci">Fibonacci (1,2,3,5,8,13)</SelectItem>
-                            <SelectItem value="linear">Linear (1,2,3,4,5,6)</SelectItem>
-                            <SelectItem value="t-shirt">T-Shirt (XS,S,M,L,XL)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
+                    <Label htmlFor="ado-org">ADO Organization & Token</Label>
+                    <Input 
+                      id="ado-org"
+                      placeholder="organization.visualstudio.com"
+                      value={integrationSettings.adoWorkspace}
+                      onChange={(e) => setIntegrationSettings(prev => ({ ...prev, adoWorkspace: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <Input 
+                      type="password"
+                      placeholder="Personal Access Token"
+                      value={integrationSettings.adoToken}
+                      onChange={(e) => setIntegrationSettings(prev => ({ ...prev, adoToken: e.target.value }))}
+                    />
                   </div>
                 </div>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+
+          {/* File Library */}
+          <Collapsible open={activeSection.fileLibrary} onOpenChange={(open) => setActiveSection(prev => ({ ...prev, fileLibrary: open }))}>
+            <CollapsibleTrigger className="flex items-center justify-between w-full p-4 text-left font-medium border rounded-lg hover:bg-muted/50" aria-label="Toggle File Library">
+              <span>File Library</span>
+              {activeSection.fileLibrary ? (
+                <ChevronDown className="h-4 w-4" />
+              ) : (
+                <ChevronRight className="h-4 w-4" />
               )}
-
-              {/* Integrations */}
-              {activeSection.integrations && (
-                <div className="p-6 space-y-6">
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4">Integrations</h3>
-                    <div className="space-y-6">
-                      {/* GitHub Section */}
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-2">
-                          <GitBranch className="h-4 w-4" />
-                          <h4 className="font-medium">GitHub</h4>
-                          <Badge variant="default" className="text-xs">Connected</Badge>
-                        </div>
-                        <div className="space-y-2">
-                          <div>
-                            <Label htmlFor="github-repo">Repository URL</Label>
-                            <Input 
-                              id="github-repo"
-                              value={integrationSettings.githubRepo}
-                              onChange={(e) => setIntegrationSettings(prev => ({ ...prev, githubRepo: e.target.value }))}
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="github-token">Access Token</Label>
-                            <Input 
-                              id="github-token"
-                              type="password"
-                              value={integrationSettings.githubToken}
-                              onChange={(e) => setIntegrationSettings(prev => ({ ...prev, githubToken: e.target.value }))}
-                            />
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Azure DevOps Section */}
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-2">
-                          <FileText className="h-4 w-4" />
-                          <h4 className="font-medium">Azure DevOps</h4>
-                          <Badge variant="default" className="text-xs">Connected</Badge>
-                        </div>
-                        <div className="space-y-2">
-                          <div>
-                            <Label htmlFor="ado-workspace">Workspace URL</Label>
-                            <Input 
-                              id="ado-workspace"
-                              value={integrationSettings.adoWorkspace}
-                              onChange={(e) => setIntegrationSettings(prev => ({ ...prev, adoWorkspace: e.target.value }))}
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="ado-token">Personal Access Token</Label>
-                            <Input 
-                              id="ado-token"
-                              type="password"
-                              value={integrationSettings.adoToken}
-                              onChange={(e) => setIntegrationSettings(prev => ({ ...prev, adoToken: e.target.value }))}
-                            />
-                          </div>
-                        </div>
-                      </div>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-2 p-4 border border-t-0 rounded-b-lg space-y-4">
+              <Button variant="outline" className="w-full" size="sm">
+                <Upload className="h-4 w-4 mr-2" />
+                Upload File
+              </Button>
+              
+              {/* File List */}
+              <div className="space-y-2">
+                {uploadedDocs.map((doc) => (
+                  <div key={doc.id} className="flex items-center gap-3 p-3 border rounded-lg">
+                    <FileText className="h-4 w-4 text-muted-foreground" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{doc.name}</p>
+                      <input 
+                        type="text" 
+                        placeholder="User Description" 
+                        className="text-xs text-muted-foreground bg-transparent border-none outline-none w-full mt-1"
+                      />
                     </div>
-                  </div>
-                </div>
-              )}
-
-              {/* File Library */}
-              {activeSection.fileLibrary && (
-                <div className="p-6 space-y-6">
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4">File Library</h3>
-                    
-                    {/* Upload Area */}
-                    <div className="border-2 border-dashed rounded-lg p-6 text-center mb-6">
-                      <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                      <p className="text-sm text-muted-foreground mb-2">
-                        Upload reference documents for AI context
-                      </p>
-                      <Button variant="outline" size="sm">
-                        Browse Files
+                    <div className="flex items-center gap-1">
+                      <Button variant="ghost" size="sm" title="Preview">
+                        <Eye className="h-3 w-3" />
+                      </Button>
+                      <Button variant="ghost" size="sm" title="Delete">
+                        <Trash2 className="h-3 w-3" />
                       </Button>
                     </div>
-
-                    {/* File List */}
-                    <div className="space-y-2">
-                      <h4 className="font-medium text-sm">Uploaded Documents</h4>
-                      {uploadedDocs.map((doc) => (
-                        <div key={doc.id} className="flex items-center gap-3 p-3 border rounded-lg">
-                          <FileText className="h-4 w-4 text-muted-foreground" />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">{doc.name}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {doc.size} • {doc.uploaded}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Button variant="ghost" size="sm" title="Preview">
-                              <Eye className="h-3 w-3" />
-                            </Button>
-                            <Button variant="ghost" size="sm" title="Delete">
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-          </div>
+                ))}
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
         </CardContent>
 
         {/* Footer */}
@@ -354,7 +301,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button onClick={onClose}>
+          <Button onClick={handleSave}>
             Save Settings
           </Button>
         </div>

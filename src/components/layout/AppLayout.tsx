@@ -12,6 +12,7 @@ import {
   Zap
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SettingsModal } from "@/components/settings/SettingsModal";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -31,6 +32,7 @@ export function AppLayout({
     github: true,
     ado: true
   });
+  const [showSettings, setShowSettings] = useState(false);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -73,7 +75,12 @@ export function AppLayout({
             <Button variant="ghost" size="icon-sm" title="Preview">
               <Eye className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="icon-sm" title="Settings">
+            <Button 
+              variant="ghost" 
+              size="icon-sm" 
+              title="Settings"
+              onClick={() => setShowSettings(true)}
+            >
               <Settings className="h-4 w-4" />
             </Button>
           </div>
@@ -104,6 +111,12 @@ export function AppLayout({
           </div>
         )}
       </div>
+
+      {/* Settings Modal */}
+      <SettingsModal 
+        isOpen={showSettings} 
+        onClose={() => setShowSettings(false)} 
+      />
     </div>
   );
 }
