@@ -74,6 +74,8 @@ interface StoryBuilderProps {
 export function StoryBuilder({ showChat = false, onToggleChat, onSetApplySuggestionHandler }: StoryBuilderProps = {}) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [dirtyCriteria, setDirtyCriteria] = useState(false);
+  const [originalTitle, setOriginalTitle] = useState("");
+  const [originalDescription, setOriginalDescription] = useState("");
   const [rawInput, setRawInput] = useState("");
   const [customPrompt, setCustomPrompt] = useState("");
   const [savedInput, setSavedInput] = useState(""); // For restart functionality
@@ -116,8 +118,10 @@ export function StoryBuilder({ showChat = false, onToggleChat, onSetApplySuggest
 
   // Track changes to title/description for dirty criteria indicator
   useEffect(() => {
-    setDirtyCriteria(true);
-  }, [story.title, story.description]);
+    const titleChanged = story.title !== originalTitle && originalTitle !== "";
+    const descriptionChanged = story.description !== originalDescription && originalDescription !== "";
+    setDirtyCriteria(titleChanged || descriptionChanged);
+  }, [story.title, story.description, originalTitle, originalDescription]);
   const [testDataPanels, setTestDataPanels] = useState({
     userInputs: true,
     edgeCases: true,
@@ -175,6 +179,9 @@ export function StoryBuilder({ showChat = false, onToggleChat, onSetApplySuggest
 
     setStory(generatedStory);
     setTestData(generatedTestData);
+    setOriginalTitle(generatedStory.title);
+    setOriginalDescription(generatedStory.description);
+    setDirtyCriteria(false);
     setIsGenerating(false);
   };
 
@@ -224,6 +231,9 @@ export function StoryBuilder({ showChat = false, onToggleChat, onSetApplySuggest
     setShowRawInput(true);
     setHasDevNotes(false);
     setDevNotesOpen(false);
+    setOriginalTitle("");
+    setOriginalDescription("");
+    setDirtyCriteria(false);
   };
 
   const restartStory = async () => {
@@ -372,14 +382,6 @@ export function StoryBuilder({ showChat = false, onToggleChat, onSetApplySuggest
         </div>
         
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setIsSettingsOpen(true)}
-            title="Project Settings"
-            className="gap-2"
-          >
-            <SettingsIcon className="h-4 w-4" /> Settings
-          </Button>
           <Button
             onClick={onToggleChat}
             variant={showChat ? "default" : "outline"}

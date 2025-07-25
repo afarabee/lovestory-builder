@@ -103,7 +103,6 @@ export function ProjectSidebar() {
         <CardContent className="space-y-4">
           {/* Story Actions */}
           <div>
-            <h4 className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Story Actions</h4>
             <div className="space-y-1">
               <Button variant="default" size="sm" className="w-full justify-start gap-2">
                 <Plus className="h-4 w-4" />
@@ -115,88 +114,6 @@ export function ProjectSidebar() {
               </Button>
             </div>
           </div>
-
-          {/* Integrations */}
-          <div>
-            <h4 className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Integrations</h4>
-            <div className="space-y-1">
-              <Button variant="outline" size="sm" className="w-full justify-start gap-2">
-                <GitBranch className="h-4 w-4" />
-                Sync with GitHub
-              </Button>
-              <Button variant="outline" size="sm" className="w-full justify-start gap-2">
-                <FileText className="h-4 w-4" />
-                Export to ADO
-              </Button>
-            </div>
-          </div>
-
-          {/* Global Metrics */}
-          <div>
-            <h4 className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Global Metrics</h4>
-            <div className="space-y-1 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Total Stories:</span>
-                <span className="font-medium">12</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Avg. Points:</span>
-                <span className="font-medium">8</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Settings */}
-          <div>
-            <h4 className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Settings</h4>
-            <div className="space-y-1">
-              <Button variant="ghost" size="sm" className="w-full justify-start gap-2">
-                <Settings className="h-4 w-4" />
-                Project Settings
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Recent Stories */}
-      <Card className="flex-1">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <History className="h-4 w-4" />
-            Recent Stories
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {recentStories.map((story) => (
-            <div
-              key={story.id}
-              className="p-3 rounded-lg border hover:bg-accent/50 cursor-pointer transition-colors"
-            >
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <StatusIcon status={story.status} />
-                  <span className="text-xs font-mono text-muted-foreground">
-                    {story.id}
-                  </span>
-                </div>
-                <Badge variant="secondary" className="text-xs">
-                  {story.points}pt
-                </Badge>
-              </div>
-              
-              <h4 className="text-sm font-medium leading-tight mb-2 line-clamp-2">
-                {story.title}
-              </h4>
-              
-              <div className="flex items-center justify-between">
-                <div className={`w-2 h-2 rounded-full ${getStatusColor(story.status)}`} />
-                <span className="text-xs text-muted-foreground">
-                  {story.lastModified.toLocaleDateString()}
-                </span>
-              </div>
-            </div>
-          ))}
         </CardContent>
       </Card>
 
