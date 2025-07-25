@@ -12,7 +12,8 @@ import {
   Plus,
   CheckCircle,
   Clock,
-  AlertCircle
+  AlertCircle,
+  Eye
 } from "lucide-react";
 
 interface ProjectInfo {
@@ -30,7 +31,12 @@ interface StoryItem {
   lastModified: Date;
 }
 
-export function ProjectSidebar() {
+interface ProjectSidebarProps {
+  showTestData?: boolean;
+  onToggleTestData?: () => void;
+}
+
+export function ProjectSidebar({ showTestData = false, onToggleTestData }: ProjectSidebarProps = {}) {
   const [projectInfo] = useState<ProjectInfo>({
     name: "E-commerce Platform",
     description: "Next-generation shopping experience with personalized recommendations",
@@ -111,6 +117,15 @@ export function ProjectSidebar() {
               <Button variant="outline" size="sm" className="w-full justify-start gap-2">
                 <History className="h-4 w-4" />
                 Restart Story
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full justify-start gap-2"
+                onClick={onToggleTestData}
+              >
+                <Eye className="h-4 w-4" />
+                Show Test Data
               </Button>
             </div>
           </div>

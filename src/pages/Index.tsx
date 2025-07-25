@@ -8,6 +8,7 @@ const Index = () => {
   const [showChat, setShowChat] = useState(false);
   const [chatHorizontallyCollapsed, setChatHorizontallyCollapsed] = useState(false);
   const [applySuggestionHandler, setApplySuggestionHandler] = useState<((type: string, content: string) => void) | null>(null);
+  const [showTestData, setShowTestData] = useState(false);
 
   const handleApplySuggestion = (type: string, content: string) => {
     applySuggestionHandler?.(type, content);
@@ -15,7 +16,12 @@ const Index = () => {
 
   return (
     <AppLayout
-      sidebarContent={<ProjectSidebar />}
+      sidebarContent={
+        <ProjectSidebar 
+          showTestData={showTestData}
+          onToggleTestData={() => setShowTestData(!showTestData)}
+        />
+      }
       chatContent={
         <ChatPanel 
           onApplySuggestion={handleApplySuggestion}
@@ -29,6 +35,8 @@ const Index = () => {
         showChat={showChat}
         onToggleChat={() => setShowChat(!showChat)}
         onSetApplySuggestionHandler={setApplySuggestionHandler}
+        showTestData={showTestData}
+        onToggleTestData={() => setShowTestData(!showTestData)}
       />
     </AppLayout>
   );

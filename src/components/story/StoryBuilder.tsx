@@ -69,9 +69,11 @@ interface StoryBuilderProps {
   showChat?: boolean;
   onToggleChat?: () => void;
   onSetApplySuggestionHandler?: (handler: (type: string, content: string) => void) => void;
+  showTestData?: boolean;
+  onToggleTestData?: () => void;
 }
 
-export function StoryBuilder({ showChat = false, onToggleChat, onSetApplySuggestionHandler }: StoryBuilderProps = {}) {
+export function StoryBuilder({ showChat = false, onToggleChat, onSetApplySuggestionHandler, showTestData = false, onToggleTestData }: StoryBuilderProps = {}) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [dirtyCriteria, setDirtyCriteria] = useState(false);
   const [originalTitle, setOriginalTitle] = useState("");
@@ -107,7 +109,6 @@ export function StoryBuilder({ showChat = false, onToggleChat, onSetApplySuggest
   const [devNotesOpen, setDevNotesOpen] = useState(false);
   const [chatHorizontallyCollapsed, setChatHorizontallyCollapsed] = useState(false);
   const [appliedFieldId, setAppliedFieldId] = useState<string | null>(null);
-  const [showTestData, setShowTestData] = useState(false);
 
   // Register the apply suggestion handler
   useEffect(() => {
@@ -754,28 +755,14 @@ export function StoryBuilder({ showChat = false, onToggleChat, onSetApplySuggest
 
         {/* Interactive Test Data Sidebar */}
         <div className="space-y-6">
-          {!showTestData ? (
-            // Collapsed State - Show Test Data Button
-            <Card>
-              <CardContent className="p-4">
-                <Button 
-                  onClick={() => setShowTestData(true)}
-                  variant="outline"
-                  className="w-full gap-2"
-                >
-                  <Database className="h-4 w-4" />
-                  Show Test Data
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
+          {showTestData && (
             // Expanded State - Full Test Data Panel
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg">Interactive Test Data</CardTitle>
                   <Button 
-                    onClick={() => setShowTestData(false)}
+                    onClick={onToggleTestData}
                     variant="ghost"
                     size="sm"
                     className="gap-2"
@@ -937,33 +924,6 @@ export function StoryBuilder({ showChat = false, onToggleChat, onSetApplySuggest
               </CardContent>
             </Card>
           )}
-
-          {/* Version History Stub */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm flex items-center gap-2">
-                <History className="h-4 w-4" />
-                Version History
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="text-xs space-y-1">
-                <div className="flex justify-between items-center p-2 rounded bg-accent/10">
-                  <span>Current Draft</span>
-                  <span className="text-muted-foreground">2 min ago</span>
-                </div>
-                <div className="flex justify-between items-center p-2 rounded">
-                  <span>Initial Generation</span>
-                  <Button variant="ghost" size="sm" className="text-xs h-6">
-                    Restore
-                  </Button>
-                </div>
-              </div>
-              <Button variant="ghost" size="sm" className="w-full text-xs">
-                View All Versions
-              </Button>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </div>
