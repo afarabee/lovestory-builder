@@ -105,7 +105,20 @@ export function ChatPanel({ onApplySuggestion, isHorizontallyCollapsed = false, 
   };
 
   const generateContextualResponse = (input: string): { reply: string; suggestion: string; hasUserFacingSuggestion?: boolean } => {
-    const lowerInput = input.toLowerCase();
+    const lowerInput = input.toLowerCase().trim();
+    
+    // Detect vague, incomplete, or nonsense input
+    const isVagueInput = (
+      lowerInput.length < 3 ||
+      /^[dfg]+$|^[hjk]+$|^[abc]+$|^test+$|^help+$|^fix+$|^more+$/.test(lowerInput) ||
+      lowerInput === "ac" || lowerInput === "more details" || lowerInput === "help help help" ||
+      /^(.)\1{3,}$/.test(lowerInput) || // repetitive characters
+      /^[!@#$%^&*()]+$/.test(lowerInput) // only special characters
+    );
+
+    if (isVagueInput) {
+      return generateMockResponse();
+    }
     
     if (lowerInput.includes('edge case') || lowerInput.includes('error')) {
       return {
@@ -131,11 +144,49 @@ export function ChatPanel({ onApplySuggestion, isHorizontallyCollapsed = false, 
       };
     }
 
-    return {
-      reply: "I understand you want to refine the story. Can you be more specific about which aspect you'd like to improve? I can help with acceptance criteria, edge cases, technical implementation details, or story sizing.",
-      suggestion: "",
-      hasUserFacingSuggestion: false
-    };
+    if (lowerInput.includes('dev') || lowerInput.includes('technical') || lowerInput.includes('implementation')) {
+      return {
+        reply: "I can provide technical implementation guidance. Based on your current story, I recommend considering OAuth integration for social login options and implementing rate limiting for failed attempts. Should I add these technical considerations to your developer notes?",
+        suggestion: "Add rate limiting (5 attempts per minute) and OAuth integration for Google/GitHub login",
+        hasUserFacingSuggestion: true // This updates visible dev notes
+      };
+    }
+
+    return generateMockResponse();
+  };
+
+  const generateMockResponse = (): { reply: string; suggestion: string; hasUserFacingSuggestion: boolean } => {
+    const mockResponses = [
+      {
+        reply: "I notice you might want to strengthen the acceptance criteria. Let me suggest adding specific validation requirements that will make this story more testable and clear for developers. Would you like me to explore additional edge cases for email validation next?",
+        suggestion: "System validates email format using RFC 5322 standard and displays specific error messages for invalid formats",
+        hasUserFacingSuggestion: true
+      },
+      {
+        reply: "Based on the current story complexity, I'm analyzing the technical requirements. This registration flow needs robust error handling and user feedback mechanisms. Should I add technical specifications for password hashing and session management?",
+        suggestion: "Implement bcrypt password hashing with salt rounds of 12 and JWT session tokens with 24-hour expiration",
+        hasUserFacingSuggestion: true
+      },
+      {
+        reply: "Let me help refine the story points estimation. Considering email verification, validation logic, and error handling, this story involves more complexity than initially apparent. Would you like me to suggest breaking this into smaller, more manageable stories?",
+        suggestion: "Increase story points to 8 due to email service integration and comprehensive validation requirements",
+        hasUserFacingSuggestion: true
+      },
+      {
+        reply: "I'm identifying potential edge cases for this registration flow. Users often encounter issues with email providers that have strict filtering or international domain names. Should I add test cases for accessibility and internationalization support?",
+        suggestion: "User attempts registration with disposable email addresses or international domain extensions",
+        hasUserFacingSuggestion: false
+      },
+      {
+        reply: "Looking at your current acceptance criteria, I can see opportunities to make them more specific and measurable. Clear success metrics will help both QA and development teams. Would you like me to explore security considerations for user data handling next?",
+        suggestion: "User receives confirmation email within 30 seconds and verification link expires after 24 hours",
+        hasUserFacingSuggestion: true
+      }
+    ];
+
+    // Randomize response to show variety
+    const randomIndex = Math.floor(Math.random() * mockResponses.length);
+    return mockResponses[randomIndex];
   };
 
   const detectContext = (input: string): ChatMessage['context'] => {
