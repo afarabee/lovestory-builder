@@ -34,9 +34,10 @@ interface StoryItem {
 interface ProjectSidebarProps {
   showTestData?: boolean;
   onToggleTestData?: () => void;
+  onNewStory?: () => void;
 }
 
-export function ProjectSidebar({ showTestData = false, onToggleTestData }: ProjectSidebarProps = {}) {
+export function ProjectSidebar({ showTestData = false, onToggleTestData, onNewStory }: ProjectSidebarProps = {}) {
   const [projectInfo] = useState<ProjectInfo>({
     name: "E-commerce Platform",
     description: "Next-generation shopping experience with personalized recommendations",
@@ -110,7 +111,12 @@ export function ProjectSidebar({ showTestData = false, onToggleTestData }: Proje
           {/* Story Actions */}
           <div>
             <div className="space-y-1">
-              <Button variant="default" size="sm" className="w-full justify-start gap-2">
+              <Button 
+                variant="default" 
+                size="sm" 
+                className="w-full justify-start gap-2"
+                onClick={onNewStory}
+              >
                 <Plus className="h-4 w-4" />
                 New User Story
               </Button>

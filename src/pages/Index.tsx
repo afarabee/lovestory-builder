@@ -5,7 +5,7 @@ import { ChatPanel } from "@/components/chat/ChatPanel";
 import { ProjectSidebar } from "@/components/sidebar/ProjectSidebar";
 
 const Index = () => {
-  const [showChat, setShowChat] = useState(false);
+  const [showChat, setShowChat] = useState(true);
   const [chatHorizontallyCollapsed, setChatHorizontallyCollapsed] = useState(false);
   const [applySuggestionHandler, setApplySuggestionHandler] = useState<((type: string, content: string) => void) | null>(null);
   const [showTestData, setShowTestData] = useState(false);
@@ -14,12 +14,22 @@ const Index = () => {
     applySuggestionHandler?.(type, content);
   };
 
+  const handleNewStory = () => {
+    // Reset test data panel state when creating new story
+    setShowTestData(false);
+    // Reset chat horizontal collapse state
+    setChatHorizontallyCollapsed(false);
+    // Keep chat expanded by default
+    setShowChat(true);
+  };
+
   return (
     <AppLayout
       sidebarContent={
         <ProjectSidebar 
           showTestData={showTestData}
           onToggleTestData={() => setShowTestData(!showTestData)}
+          onNewStory={handleNewStory}
         />
       }
       chatContent={
@@ -37,6 +47,7 @@ const Index = () => {
         onSetApplySuggestionHandler={setApplySuggestionHandler}
         showTestData={showTestData}
         onToggleTestData={() => setShowTestData(!showTestData)}
+        onNewStory={handleNewStory}
       />
     </AppLayout>
   );

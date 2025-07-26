@@ -71,9 +71,10 @@ interface StoryBuilderProps {
   onSetApplySuggestionHandler?: (handler: (type: string, content: string) => void) => void;
   showTestData?: boolean;
   onToggleTestData?: () => void;
+  onNewStory?: () => void;
 }
 
-export function StoryBuilder({ showChat = false, onToggleChat, onSetApplySuggestionHandler, showTestData = false, onToggleTestData }: StoryBuilderProps = {}) {
+export function StoryBuilder({ showChat = false, onToggleChat, onSetApplySuggestionHandler, showTestData = false, onToggleTestData, onNewStory }: StoryBuilderProps = {}) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [dirtyCriteria, setDirtyCriteria] = useState(false);
   const [originalTitle, setOriginalTitle] = useState("");
@@ -235,6 +236,19 @@ export function StoryBuilder({ showChat = false, onToggleChat, onSetApplySuggest
     setOriginalTitle("");
     setOriginalDescription("");
     setDirtyCriteria(false);
+    setIsGenerating(false);
+    setIsGeneratingDevNotes(false);
+    setAppliedFieldId(null);
+    // Reset test data panels
+    setTestDataPanels({
+      userInputs: true,
+      edgeCases: true,
+      apiMocks: true,
+      codeSnippets: true
+    });
+    
+    // Call parent reset handler
+    onNewStory?.();
   };
 
   const restartStory = async () => {

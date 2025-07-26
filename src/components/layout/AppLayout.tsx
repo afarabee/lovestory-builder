@@ -98,7 +98,7 @@ export function AppLayout({
 
         {/* Main Content */}
         <main className={cn(
-          "flex-1 overflow-auto",
+          "flex-1 overflow-auto transition-all duration-300",
           showChat && "mr-96"
         )}>
           {children}
@@ -106,7 +106,7 @@ export function AppLayout({
 
         {/* Chat Panel */}
         {showChat && (
-          <div className="w-96 border-l border-border bg-card fixed right-0 top-16 bottom-0 overflow-auto animate-slide-in-right">
+          <div className="w-96 border-l border-border bg-card fixed right-0 top-16 bottom-0 overflow-auto animate-slide-in-right z-10">
             {chatContent}
           </div>
         )}

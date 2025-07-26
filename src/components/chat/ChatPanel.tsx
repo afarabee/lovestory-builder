@@ -44,7 +44,6 @@ interface ChatPanelProps {
 }
 
 export function ChatPanel({ onApplySuggestion, isHorizontallyCollapsed = false, onHorizontalToggle }: ChatPanelProps = {}) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: '1',
@@ -176,15 +175,16 @@ export function ChatPanel({ onApplySuggestion, isHorizontallyCollapsed = false, 
 
   if (isHorizontallyCollapsed) {
     return (
-      <div className="w-8 h-full bg-muted border-l flex flex-col items-center">
+      <div className="w-12 h-full bg-card border-l flex flex-col items-center shadow-lg">
         <Button
-          variant="ghost"
-          size="sm"
+          variant="default"
+          size="lg"
           onClick={onHorizontalToggle}
-          className="w-full h-12 flex flex-col items-center justify-center text-xs rotate-90 whitespace-nowrap"
-          title="Open chat panel"
+          className="w-10 h-16 flex flex-col items-center justify-center text-sm font-medium rounded-l-lg rounded-r-none shadow-md hover:shadow-lg transition-all duration-200"
+          title="Open Story Refinement Chat"
         >
-          Chat ▶
+          <MessageSquare className="h-5 w-5 mb-1" />
+          <span className="text-xs leading-none">Chat</span>
         </Button>
       </div>
     );
@@ -199,32 +199,20 @@ export function ChatPanel({ onApplySuggestion, isHorizontallyCollapsed = false, 
               variant="ghost"
               size="icon"
               onClick={onHorizontalToggle}
-              className="h-6 w-6"
+              className="h-8 w-8 hover:bg-muted/80 transition-colors"
               title="Collapse chat panel"
             >
-              ⟨
+              <span className="text-lg font-bold">⟨</span>
             </Button>
             <CardTitle className="text-lg flex items-center gap-2">
               <MessageSquare className="h-5 w-5 text-primary" />
               Story Refinement Chat
             </CardTitle>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="h-6 w-6"
-            title={isCollapsed ? "Expand chat panel" : "Collapse chat panel"}
-          >
-            {isCollapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
-          </Button>
         </div>
       </CardHeader>
       
-      <Collapsible open={!isCollapsed} onOpenChange={(open) => setIsCollapsed(!open)}>
-
-        <CollapsibleContent>
-          <div className="flex-1 p-0 flex flex-col min-h-96">
+      <div className="flex-1 p-0 flex flex-col min-h-96">
         {/* Messages */}
         <ScrollArea className="flex-1 p-4">
           <div className="space-y-4">
@@ -370,8 +358,6 @@ export function ChatPanel({ onApplySuggestion, isHorizontallyCollapsed = false, 
               </div>
             </div>
           </div>
-        </CollapsibleContent>
-      </Collapsible>
     </div>
   );
 }
