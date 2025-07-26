@@ -30,6 +30,7 @@ interface ChatMessage {
   timestamp: Date;
   context?: 'story' | 'criteria' | 'testing' | 'dev-notes';
   suggestion?: string;
+  hasUserFacingSuggestion?: boolean;
 }
 
 interface TestDataUpdate {
@@ -51,7 +52,8 @@ export function ChatPanel({ onApplySuggestion, isHorizontallyCollapsed = false, 
       content: "How can I help refine your story? I can strengthen acceptance criteria, explore edge cases, adjust story points, or provide technical insights.",
       timestamp: new Date(),
       context: 'story',
-      suggestion: ""
+      suggestion: "",
+      hasUserFacingSuggestion: false
     }
   ]);
 
@@ -86,7 +88,8 @@ export function ChatPanel({ onApplySuggestion, isHorizontallyCollapsed = false, 
       content: responseData.reply,
       timestamp: new Date(),
       context: detectContext(inputValue),
-      suggestion: responseData.suggestion || undefined
+      suggestion: responseData.suggestion || undefined,
+      hasUserFacingSuggestion: responseData.hasUserFacingSuggestion || false
     };
 
     // Generate test data updates based on context
@@ -101,33 +104,37 @@ export function ChatPanel({ onApplySuggestion, isHorizontallyCollapsed = false, 
     setIsTyping(false);
   };
 
-  const generateContextualResponse = (input: string): { reply: string; suggestion: string } => {
+  const generateContextualResponse = (input: string): { reply: string; suggestion: string; hasUserFacingSuggestion?: boolean } => {
     const lowerInput = input.toLowerCase();
     
     if (lowerInput.includes('edge case') || lowerInput.includes('error')) {
       return {
         reply: "I've identified a new edge case and added it to your test data. For the email validation, we should also consider users entering special characters like '+' or international characters. Would you like me to add acceptance criteria for internationalization?",
-        suggestion: "User submits email with special characters like + or international domains"
+        suggestion: "User submits email with special characters like + or international domains",
+        hasUserFacingSuggestion: false // This only updates backend test data
       };
     }
     
     if (lowerInput.includes('points') || lowerInput.includes('estimate')) {
       return {
         reply: "Based on the complexity of email verification and the need for robust validation, I'd recommend keeping this at 5 story points. This accounts for frontend validation, backend API integration, and email service setup. Should we break this into smaller stories?",
-        suggestion: "Adjust story points to 8 considering email service integration complexity"
+        suggestion: "Adjust story points to 8 considering email service integration complexity",
+        hasUserFacingSuggestion: true // This updates visible story points
       };
     }
     
     if (lowerInput.includes('criteria') || lowerInput.includes('acceptance')) {
       return {
         reply: "I can strengthen the acceptance criteria. Would you like me to add specific validation rules for password complexity, or focus on the email verification flow? I can also add criteria for accessibility and error handling.",
-        suggestion: "System displays real-time password strength indicator with specific requirements"
+        suggestion: "System displays real-time password strength indicator with specific requirements",
+        hasUserFacingSuggestion: true // This updates visible acceptance criteria
       };
     }
 
     return {
       reply: "I understand you want to refine the story. Can you be more specific about which aspect you'd like to improve? I can help with acceptance criteria, edge cases, technical implementation details, or story sizing.",
-      suggestion: ""
+      suggestion: "",
+      hasUserFacingSuggestion: false
     };
   };
 
@@ -249,7 +256,7 @@ export function ChatPanel({ onApplySuggestion, isHorizontallyCollapsed = false, 
                     <span className="text-xs opacity-70">
                       {message.timestamp.toLocaleTimeString()}
                     </span>
-                    {message.type === 'ai' && message.suggestion && message.suggestion.trim() && (
+                    {message.type === 'ai' && message.suggestion && message.suggestion.trim() && message.hasUserFacingSuggestion && (
                       <Button
                         variant="ghost"
                         size="sm"
