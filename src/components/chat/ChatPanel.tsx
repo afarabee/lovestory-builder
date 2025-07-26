@@ -158,29 +158,44 @@ export function ChatPanel({ onApplySuggestion, isHorizontallyCollapsed = false, 
   const generateMockResponse = (): { reply: string; suggestion: string; hasUserFacingSuggestion: boolean } => {
     const mockResponses = [
       {
-        reply: "I notice you might want to strengthen the acceptance criteria. Let me suggest adding specific validation requirements that will make this story more testable and clear for developers. Would you like me to explore additional edge cases for email validation next?",
+        reply: "Want to beef up the acceptance criteria? I'm thinking we could add specific validation rules to make this more testable. Should I throw in some edge cases for email validation while we're at it?",
         suggestion: "System validates email format using RFC 5322 standard and displays specific error messages for invalid formats",
         hasUserFacingSuggestion: true
       },
       {
-        reply: "Based on the current story complexity, I'm analyzing the technical requirements. This registration flow needs robust error handling and user feedback mechanisms. Should I add technical specifications for password hashing and session management?",
+        reply: "Got it — let's look at the technical side. This registration flow could use better error handling and user feedback. Want me to add some specs for password hashing and session management?",
         suggestion: "Implement bcrypt password hashing with salt rounds of 12 and JWT session tokens with 24-hour expiration",
         hasUserFacingSuggestion: true
       },
       {
-        reply: "Let me help refine the story points estimation. Considering email verification, validation logic, and error handling, this story involves more complexity than initially apparent. Would you like me to suggest breaking this into smaller, more manageable stories?",
+        reply: "Happy to help with the story points! This looks more complex than it first appeared — email verification plus validation adds up. Think we should bump it to 8 points?",
         suggestion: "Increase story points to 8 due to email service integration and comprehensive validation requirements",
         hasUserFacingSuggestion: true
       },
       {
-        reply: "I'm identifying potential edge cases for this registration flow. Users often encounter issues with email providers that have strict filtering or international domain names. Should I add test cases for accessibility and internationalization support?",
+        reply: "Let me add a couple edge cases for this registration flow. Users love trying weird email formats and international domains. Need help adding accessibility and internationalization tests too?",
         suggestion: "User attempts registration with disposable email addresses or international domain extensions",
         hasUserFacingSuggestion: false
       },
       {
-        reply: "Looking at your current acceptance criteria, I can see opportunities to make them more specific and measurable. Clear success metrics will help both QA and development teams. Would you like me to explore security considerations for user data handling next?",
+        reply: "Sure! Want to adjust the criteria to be more specific? Clear success metrics help everyone know when we're done. Should I look at security considerations next?",
         suggestion: "User receives confirmation email within 30 seconds and verification link expires after 24 hours",
         hasUserFacingSuggestion: true
+      },
+      {
+        reply: "Do you think we should tighten up the description? I can help make it clearer for the dev team. Anything specific you want to change about the current wording?",
+        suggestion: "User can register with email and password, receives verification email within 30 seconds, and completes signup process",
+        hasUserFacingSuggestion: true
+      },
+      {
+        reply: "Want to add some technical notes? I'm thinking we should mention API rate limiting and maybe OAuth options. Let me know if you want me to dive deeper into the implementation details.",
+        suggestion: "Add rate limiting (5 attempts per minute) and OAuth integration for Google/GitHub login",
+        hasUserFacingSuggestion: true
+      },
+      {
+        reply: "Need help adding edge cases? I can think of a few scenarios that might trip up users — like what happens when their email provider blocks our verification emails. Should I add those?",
+        suggestion: "Handle email delivery failures and provide alternative verification methods",
+        hasUserFacingSuggestion: false
       }
     ];
 
