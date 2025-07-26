@@ -72,9 +72,11 @@ interface StoryBuilderProps {
   showTestData?: boolean;
   onToggleTestData?: () => void;
   onNewStory?: () => void;
+  storyGenerated?: boolean;
+  onStoryGenerated?: () => void;
 }
 
-export function StoryBuilder({ showChat = false, onToggleChat, onSetApplySuggestionHandler, showTestData = false, onToggleTestData, onNewStory }: StoryBuilderProps = {}) {
+export function StoryBuilder({ showChat = false, onToggleChat, onSetApplySuggestionHandler, showTestData = false, onToggleTestData, onNewStory, storyGenerated = false, onStoryGenerated }: StoryBuilderProps = {}) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [dirtyCriteria, setDirtyCriteria] = useState(false);
   const [originalTitle, setOriginalTitle] = useState("");
@@ -136,6 +138,9 @@ export function StoryBuilder({ showChat = false, onToggleChat, onSetApplySuggest
     setShowRawInput(false);
     setSavedInput(rawInput); // Save for restart
     setSavedCustomPrompt(customPrompt); // Save for restart
+    
+    // Trigger the UI state change to show all sections
+    onStoryGenerated?.();
     
     // Simulate AI generation
     await new Promise(resolve => setTimeout(resolve, 2000));
@@ -386,45 +391,47 @@ export function StoryBuilder({ showChat = false, onToggleChat, onSetApplySuggest
         onClose={() => setIsSettingsOpen(false)}
       />
       <div className="p-6 space-y-6">
-      {/* Progress Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <h2 className="text-2xl font-semibold">Story Builder</h2>
-          <Badge variant="outline" className="gap-1">
-            <StatusIcon status={story.status} />
-            {story.status.replace('-', ' ')}
-          </Badge>
+      {/* Progress Header - Only show when story is generated */}
+      {storyGenerated && (
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <h2 className="text-2xl font-semibold">Story Builder</h2>
+            <Badge variant="outline" className="gap-1">
+              <StatusIcon status={story.status} />
+              {story.status.replace('-', ' ')}
+            </Badge>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={onToggleChat}
+              variant={showChat ? "default" : "outline"}
+              className="gap-2"
+              title="Open Story Refinement Chat"
+            >
+              <MessageSquare className="h-4 w-4" />
+              Chat
+            </Button>
+            <Button 
+              onClick={newStory}
+              variant="outline"
+              className="gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              New User Story
+            </Button>
+            <Button 
+              onClick={restartStory}
+              variant="outline"
+              disabled={!savedInput}
+              className="gap-2"
+            >
+              <RotateCcw className="h-4 w-4" />
+              Restart Story
+            </Button>
+          </div>
         </div>
-        
-        <div className="flex items-center gap-2">
-          <Button
-            onClick={onToggleChat}
-            variant={showChat ? "default" : "outline"}
-            className="gap-2"
-            title="Open Story Refinement Chat"
-          >
-            <MessageSquare className="h-4 w-4" />
-            Chat
-          </Button>
-          <Button 
-            onClick={newStory}
-            variant="outline"
-            className="gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            New User Story
-          </Button>
-          <Button 
-            onClick={restartStory}
-            variant="outline"
-            disabled={!savedInput}
-            className="gap-2"
-          >
-            <RotateCcw className="h-4 w-4" />
-            Restart Story
-          </Button>
-        </div>
-      </div>
+      )}
 
       {/* Raw Input Zone */}
       {showRawInput && (
@@ -529,11 +536,13 @@ export function StoryBuilder({ showChat = false, onToggleChat, onSetApplySuggest
         </Card>
       )}
 
-      <div className={`grid gap-6 ${showTestData ? 'grid-cols-3' : 'grid-cols-1'}`}>
-        {/* Main Story Content */}
-        <div className={`space-y-6 ${showTestData ? 'col-span-2' : 'col-span-1'}`}>
-          {/* Story Details */}
-          <Card>
+      {/* Only show story sections after generation */}
+      {storyGenerated && (
+        <div className={`grid gap-6 ${showTestData ? 'grid-cols-3' : 'grid-cols-1'}`}>
+          {/* Main Story Content */}
+          <div className={`space-y-6 ${showTestData ? 'col-span-2' : 'col-span-1'}`}>
+            {/* Story Details */}
+            <Card>
             <CardHeader>
               <CardTitle className="text-lg">User Story Details</CardTitle>
             </CardHeader>
@@ -939,8 +948,9 @@ export function StoryBuilder({ showChat = false, onToggleChat, onSetApplySuggest
             </Card>
           </div>
         )}
+        </div>
+      )}
       </div>
-    </div>
     </>
   );
 }

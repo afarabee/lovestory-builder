@@ -5,22 +5,29 @@ import { ChatPanel } from "@/components/chat/ChatPanel";
 import { ProjectSidebar } from "@/components/sidebar/ProjectSidebar";
 
 const Index = () => {
-  const [showChat, setShowChat] = useState(true);
+  const [showChat, setShowChat] = useState(false); // Hidden by default
   const [chatHorizontallyCollapsed, setChatHorizontallyCollapsed] = useState(false);
   const [applySuggestionHandler, setApplySuggestionHandler] = useState<((type: string, content: string) => void) | null>(null);
   const [showTestData, setShowTestData] = useState(false);
+  const [storyGenerated, setStoryGenerated] = useState(false); // Track if story has been generated
 
   const handleApplySuggestion = (type: string, content: string) => {
     applySuggestionHandler?.(type, content);
   };
 
-  const handleNewStory = () => {
-    // Reset test data panel state when creating new story
-    setShowTestData(false);
-    // Reset chat horizontal collapse state
-    setChatHorizontallyCollapsed(false);
-    // Keep chat expanded by default
+  const handleStoryGenerated = () => {
+    // Show all sections including chat when story is generated
+    setStoryGenerated(true);
     setShowChat(true);
+    setChatHorizontallyCollapsed(false);
+  };
+
+  const handleNewStory = () => {
+    // Reset everything to initial state
+    setStoryGenerated(false);
+    setShowChat(false);
+    setShowTestData(false);
+    setChatHorizontallyCollapsed(false);
   };
 
   return (
@@ -48,6 +55,8 @@ const Index = () => {
         showTestData={showTestData}
         onToggleTestData={() => setShowTestData(!showTestData)}
         onNewStory={handleNewStory}
+        storyGenerated={storyGenerated}
+        onStoryGenerated={handleStoryGenerated}
       />
     </AppLayout>
   );
