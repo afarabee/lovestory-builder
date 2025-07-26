@@ -515,9 +515,9 @@ export function StoryBuilder({ showChat = false, onToggleChat, onSetApplySuggest
         </Card>
       )}
 
-      <div className="grid grid-cols-3 gap-6">
+      <div className={`grid gap-6 ${showTestData ? 'grid-cols-3' : 'grid-cols-1'}`}>
         {/* Main Story Content */}
-        <div className="col-span-2 space-y-6">
+        <div className={`space-y-6 ${showTestData ? 'col-span-2' : 'col-span-1'}`}>
           {/* Story Details */}
           <Card>
             <CardHeader>
@@ -754,9 +754,9 @@ export function StoryBuilder({ showChat = false, onToggleChat, onSetApplySuggest
         </div>
 
         {/* Interactive Test Data Sidebar */}
-        <div className="space-y-6">
-          {showTestData && (
-            // Expanded State - Full Test Data Panel
+        {showTestData && (
+          <div className="space-y-6">
+            {/* Expanded State - Full Test Data Panel */}
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -923,8 +923,8 @@ export function StoryBuilder({ showChat = false, onToggleChat, onSetApplySuggest
                 </Collapsible>
               </CardContent>
             </Card>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
     </>
