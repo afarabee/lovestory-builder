@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -127,6 +127,11 @@ export function StoryBuilder({
   const [devNotesOpen, setDevNotesOpen] = useState(false);
   const [chatHorizontallyCollapsed, setChatHorizontallyCollapsed] = useState(false);
   const [appliedFieldId, setAppliedFieldId] = useState<string | null>(null);
+  
+  // Auto-save state
+  const [lastAutoSaveContent, setLastAutoSaveContent] = useState<string>('');
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const autoSaveIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Register the apply suggestion handler
   useEffect(() => {
@@ -148,6 +153,88 @@ export function StoryBuilder({
       onVersionsChange(versions, currentContent);
     }
   }, [versions, story, testData, onVersionsChange]);
+
+  // Auto-save logic - debounced save after 5 seconds of no typing
+  const createContentSnapshot = useCallback(() => {
+    return JSON.stringify({
+      title: story.title,
+      description: story.description,
+      acceptanceCriteria: story.acceptanceCriteria,
+      storyPoints: story.storyPoints,
+      testData: testData
+    });
+  }, [story, testData]);
+
+  const saveAutoVersion = useCallback((label: string) => {
+    const storyContent = {
+      title: story.title,
+      description: story.description,
+      acceptanceCriteria: story.acceptanceCriteria,
+      storyPoints: story.storyPoints,
+      testData: testData
+    };
+    saveVersion(storyContent, label);
+    setLastAutoSaveContent(createContentSnapshot());
+  }, [story, testData, saveVersion, createContentSnapshot]);
+
+  // Debounced auto-save after 5 seconds of no typing
+  useEffect(() => {
+    const currentSnapshot = createContentSnapshot();
+    
+    // Only set up auto-save if content has changed and story has content
+    if (currentSnapshot !== lastAutoSaveContent && story.title.trim()) {
+      // Clear existing timeout
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+      
+      // Set new timeout for 5 seconds
+      autoSaveTimeoutRef.current = setTimeout(() => {
+        saveAutoVersion("Edited by User");
+      }, 5000);
+    }
+
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, [story, testData, lastAutoSaveContent, createContentSnapshot, saveAutoVersion]);
+
+  // Auto-save every 5 minutes if content changed
+  useEffect(() => {
+    // Set up 5-minute interval
+    autoSaveIntervalRef.current = setInterval(() => {
+      const currentSnapshot = createContentSnapshot();
+      if (currentSnapshot !== lastAutoSaveContent && story.title.trim()) {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString('en-US', { 
+          hour: '2-digit', 
+          minute: '2-digit', 
+          hour12: true 
+        });
+        saveAutoVersion(`Auto-Save @ ${timeString}`);
+      }
+    }, 5 * 60 * 1000); // 5 minutes
+
+    return () => {
+      if (autoSaveIntervalRef.current) {
+        clearInterval(autoSaveIntervalRef.current);
+      }
+    };
+  }, [story.title, createContentSnapshot, lastAutoSaveContent, saveAutoVersion]);
+
+  // Clean up timers on unmount
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+      if (autoSaveIntervalRef.current) {
+        clearInterval(autoSaveIntervalRef.current);
+      }
+    };
+  }, []);
 
   // Track changes to title/description for dirty criteria indicator
   useEffect(() => {
@@ -229,6 +316,7 @@ export function StoryBuilder({
       testData: generatedTestData
     };
     saveVersion(storyContent, "Initial Generation");
+    setLastAutoSaveContent(JSON.stringify(storyContent));
   };
 
   const generateDevNotes = async () => {
@@ -291,8 +379,17 @@ export function StoryBuilder({
       codeSnippets: true
     });
     
-    // Clear version history
+    // Clear version history and auto-save state
     clearVersions();
+    setLastAutoSaveContent('');
+    
+    // Clear any pending auto-save timers
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+    if (autoSaveIntervalRef.current) {
+      clearInterval(autoSaveIntervalRef.current);
+    }
     
     // Call parent reset handler
     onNewStory?.();
@@ -407,7 +504,8 @@ export function StoryBuilder({
         storyPoints: updatedStory.storyPoints,
         testData: updatedTestData
       };
-      saveVersion(storyContent, `Applied ${type} suggestion`);
+      saveVersion(storyContent, "Refinement Applied");
+      setLastAutoSaveContent(JSON.stringify(storyContent));
     }
   };
 
@@ -449,6 +547,7 @@ export function StoryBuilder({
       testData: testData
     };
     saveVersion(storyContent, "Manual Save");
+    setLastAutoSaveContent(JSON.stringify(storyContent));
     
     toast({
       title: "Version saved",
