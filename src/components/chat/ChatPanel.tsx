@@ -19,7 +19,8 @@ import {
   ChevronUp,
   MessageSquare,
   Check,
-  CheckCircle
+  CheckCircle,
+  Undo2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -40,11 +41,12 @@ interface TestDataUpdate {
 
 interface ChatPanelProps {
   onApplySuggestion?: (type: string, content: string) => void;
+  onUndoSuggestion?: () => void;
   isHorizontallyCollapsed?: boolean;
   onHorizontalToggle?: () => void;
 }
 
-export function ChatPanel({ onApplySuggestion, isHorizontallyCollapsed = false, onHorizontalToggle }: ChatPanelProps = {}) {
+export function ChatPanel({ onApplySuggestion, onUndoSuggestion, isHorizontallyCollapsed = false, onHorizontalToggle }: ChatPanelProps = {}) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: '1',
@@ -60,6 +62,7 @@ export function ChatPanel({ onApplySuggestion, isHorizontallyCollapsed = false, 
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [testDataUpdates, setTestDataUpdates] = useState<TestDataUpdate[]>([]);
+  const [lastAppliedSuggestion, setLastAppliedSuggestion] = useState<ChatMessage | null>(null);
   const { toast } = useToast();
 
   const sendMessage = async () => {
@@ -157,25 +160,33 @@ export function ChatPanel({ onApplySuggestion, isHorizontallyCollapsed = false, 
 
   const generateMockResponse = (): { reply: string; suggestion: string; hasUserFacingSuggestion: boolean } => {
     const mockResponses = [
+      // Title suggestions
+      {
+        reply: "The story title could be more specific. Want me to make it clearer what the user actually does?",
+        suggestion: "User Registration with Email Verification",
+        hasUserFacingSuggestion: true
+      },
+      {
+        reply: "Let's make the title more action-oriented. How about emphasizing the verification step?",
+        suggestion: "Complete Account Registration and Email Verification",
+        hasUserFacingSuggestion: true
+      },
+      // Description improvements
+      {
+        reply: "Do you think we should tighten up the description? I can help make it clearer for the dev team. Anything specific you want to change about the current wording?",
+        suggestion: "User can create an account by providing email and password, receives automated verification email within 30 seconds, and must verify email address to complete registration process",
+        hasUserFacingSuggestion: true
+      },
+      {
+        reply: "The description could be more detailed. Want me to add specifics about the verification flow?",
+        suggestion: "User enters email and secure password, system validates inputs in real-time, sends verification email with expiring link, and activates account upon successful verification",
+        hasUserFacingSuggestion: true
+      },
+      // Acceptance criteria suggestions
       {
         reply: "Want to beef up the acceptance criteria? I'm thinking we could add specific validation rules to make this more testable. Should I throw in some edge cases for email validation while we're at it?",
         suggestion: "System validates email format using RFC 5322 standard and displays specific error messages for invalid formats",
         hasUserFacingSuggestion: true
-      },
-      {
-        reply: "Got it — let's look at the technical side. This registration flow could use better error handling and user feedback. Want me to add some specs for password hashing and session management?",
-        suggestion: "Implement bcrypt password hashing with salt rounds of 12 and JWT session tokens with 24-hour expiration",
-        hasUserFacingSuggestion: true
-      },
-      {
-        reply: "Happy to help with the story points! This looks more complex than it first appeared — email verification plus validation adds up. Think we should bump it to 8 points?",
-        suggestion: "Increase story points to 8 due to email service integration and comprehensive validation requirements",
-        hasUserFacingSuggestion: true
-      },
-      {
-        reply: "Let me add a couple edge cases for this registration flow. Users love trying weird email formats and international domains. Need help adding accessibility and internationalization tests too?",
-        suggestion: "User attempts registration with disposable email addresses or international domain extensions",
-        hasUserFacingSuggestion: false
       },
       {
         reply: "Sure! Want to adjust the criteria to be more specific? Clear success metrics help everyone know when we're done. Should I look at security considerations next?",
@@ -183,14 +194,42 @@ export function ChatPanel({ onApplySuggestion, isHorizontallyCollapsed = false, 
         hasUserFacingSuggestion: true
       },
       {
-        reply: "Do you think we should tighten up the description? I can help make it clearer for the dev team. Anything specific you want to change about the current wording?",
-        suggestion: "User can register with email and password, receives verification email within 30 seconds, and completes signup process",
+        reply: "The acceptance criteria could use some password requirements. Mind if I add those?",
+        suggestion: "Password must contain at least 8 characters, one uppercase letter, one number, and one special character",
         hasUserFacingSuggestion: true
       },
+      // Story points adjustments
+      {
+        reply: "Happy to help with the story points! This looks more complex than it first appeared — email verification plus validation adds up. Think we should bump it to 8 points?",
+        suggestion: "8",
+        hasUserFacingSuggestion: true
+      },
+      {
+        reply: "Story points seem about right, but considering the email service integration, maybe we need to adjust slightly?",
+        suggestion: "5",
+        hasUserFacingSuggestion: true
+      },
+      {
+        reply: "This registration flow has quite a bit of complexity. Email validation, password hashing, verification emails... thinking this might be closer to 13 points?",
+        suggestion: "13",
+        hasUserFacingSuggestion: true
+      },
+      // Dev notes
       {
         reply: "Want to add some technical notes? I'm thinking we should mention API rate limiting and maybe OAuth options. Let me know if you want me to dive deeper into the implementation details.",
         suggestion: "Add rate limiting (5 attempts per minute) and OAuth integration for Google/GitHub login",
         hasUserFacingSuggestion: true
+      },
+      {
+        reply: "Got it — let's look at the technical side. This registration flow could use better error handling and user feedback. Want me to add some specs for password hashing and session management?",
+        suggestion: "Implement bcrypt password hashing with salt rounds of 12 and JWT session tokens with 24-hour expiration",
+        hasUserFacingSuggestion: true
+      },
+      // Non-user-facing suggestions (test data only)
+      {
+        reply: "Let me add a couple edge cases for this registration flow. Users love trying weird email formats and international domains. Need help adding accessibility and internationalization tests too?",
+        suggestion: "User attempts registration with disposable email addresses or international domain extensions",
+        hasUserFacingSuggestion: false
       },
       {
         reply: "Need help adding edge cases? I can think of a few scenarios that might trip up users — like what happens when their email provider blocks our verification emails. Should I add those?",
@@ -231,12 +270,25 @@ export function ChatPanel({ onApplySuggestion, isHorizontallyCollapsed = false, 
     // Apply the suggestion to the appropriate panel
     if (onApplySuggestion && message.suggestion) {
       onApplySuggestion(suggestionType, message.suggestion);
+      setLastAppliedSuggestion(message);
     }
     
     toast({
       title: "Suggestion Applied",
       description: `${suggestionType.replace('-', ' ')} has been updated with AI suggestions.`,
     });
+  };
+
+  const undoLastSuggestion = () => {
+    if (onUndoSuggestion && lastAppliedSuggestion) {
+      onUndoSuggestion();
+      setLastAppliedSuggestion(null);
+      
+      toast({
+        title: "Suggestion Undone",
+        description: "Last AI suggestion has been reverted.",
+      });
+    }
   };
 
   const quickActions = [
@@ -322,17 +374,30 @@ export function ChatPanel({ onApplySuggestion, isHorizontallyCollapsed = false, 
                     <span className="text-xs opacity-70">
                       {message.timestamp.toLocaleTimeString()}
                     </span>
-                    {message.type === 'ai' && message.suggestion && message.suggestion.trim() && message.hasUserFacingSuggestion && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => applySuggestion(message)}
-                        className="gap-1 text-xs h-6"
-                      >
-                        <CheckCircle className="h-3 w-3" />
-                        Apply Suggestion
-                      </Button>
-                    )}
+                    <div className="flex gap-1">
+                      {message.type === 'ai' && message.suggestion && message.suggestion.trim() && message.hasUserFacingSuggestion && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => applySuggestion(message)}
+                          className="gap-1 text-xs h-6"
+                        >
+                          <CheckCircle className="h-3 w-3" />
+                          Apply Suggestion
+                        </Button>
+                      )}
+                      {lastAppliedSuggestion && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={undoLastSuggestion}
+                          className="gap-1 text-xs h-6 text-muted-foreground hover:text-foreground"
+                        >
+                          <Undo2 className="h-3 w-3" />
+                          Undo Last
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
