@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,7 +20,8 @@ import {
   MessageSquare,
   Check,
   CheckCircle,
-  Undo2
+  Undo2,
+  ArrowDown
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -63,7 +64,64 @@ export function ChatPanel({ onApplySuggestion, onUndoSuggestion, isHorizontallyC
   const [isTyping, setIsTyping] = useState(false);
   const [testDataUpdates, setTestDataUpdates] = useState<TestDataUpdate[]>([]);
   const [lastAppliedSuggestion, setLastAppliedSuggestion] = useState<ChatMessage | null>(null);
+  
+  // Scroll management
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
+  const [isUserScrolling, setIsUserScrolling] = useState(false);
+  
   const { toast } = useToast();
+
+  // Auto-scroll to bottom when new messages arrive
+  const scrollToBottom = (smooth = true) => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ 
+        behavior: smooth ? 'smooth' : 'auto',
+        block: 'end'
+      });
+    }
+  };
+
+  // Check if user is near bottom of scroll area
+  const checkScrollPosition = () => {
+    if (scrollAreaRef.current) {
+      const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (scrollContainer) {
+        const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
+        const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+        setShowScrollToBottom(!isNearBottom);
+      }
+    }
+  };
+
+  // Handle scroll events
+  const handleScroll = () => {
+    setIsUserScrolling(true);
+    checkScrollPosition();
+    
+    // Reset user scrolling flag after a delay
+    setTimeout(() => setIsUserScrolling(false), 1000);
+  };
+
+  // Auto-scroll when new messages are added (unless user is actively scrolling)
+  useEffect(() => {
+    if (!isUserScrolling) {
+      scrollToBottom();
+    }
+    checkScrollPosition();
+  }, [messages, isTyping]);
+
+  // Set up scroll listener
+  useEffect(() => {
+    if (scrollAreaRef.current) {
+      const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (scrollContainer) {
+        scrollContainer.addEventListener('scroll', handleScroll);
+        return () => scrollContainer.removeEventListener('scroll', handleScroll);
+      }
+    }
+  }, [scrollAreaRef.current]);
 
   const sendMessage = async () => {
     if (!inputValue.trim()) return;
@@ -337,9 +395,9 @@ export function ChatPanel({ onApplySuggestion, onUndoSuggestion, isHorizontallyC
         </div>
       </CardHeader>
       
-      <div className="flex-1 p-0 flex flex-col min-h-96">
+      <div className="flex-1 p-0 flex flex-col min-h-96 relative">
         {/* Messages */}
-        <ScrollArea className="flex-1 p-4">
+        <ScrollArea ref={scrollAreaRef} className="flex-1 p-4">
           <div className="space-y-4">
             {messages.map((message) => (
               <div
@@ -411,8 +469,25 @@ export function ChatPanel({ onApplySuggestion, onUndoSuggestion, isHorizontallyC
                 </div>
               </div>
             )}
+            
+            {/* Invisible element to scroll to */}
+            <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
+
+        {/* Scroll to Bottom Button */}
+        {showScrollToBottom && (
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => scrollToBottom()}
+            className="absolute bottom-20 right-4 z-10 gap-1 shadow-lg hover:shadow-xl transition-all duration-200 rounded-full h-10 px-3"
+            title="Scroll to bottom"
+          >
+            <ArrowDown className="h-4 w-4" />
+            <span className="text-xs">Scroll to Bottom</span>
+          </Button>
+        )}
 
         {/* Test Data Updates */}
         {testDataUpdates.length > 0 && (
