@@ -135,6 +135,12 @@ export function ProjectSidebar({
   };
 
   const handleVersionClick = (version: StoryVersion) => {
+    // Show diff view when clicking on a version
+    setSelectedVersionForDiff(version);
+  };
+
+  const handleRestoreClick = (version: StoryVersion, e: React.MouseEvent) => {
+    e.stopPropagation();
     setVersionToRestore(version);
     setShowRestoreConfirm(true);
   };
@@ -213,34 +219,46 @@ export function ProjectSidebar({
                 <TooltipProvider key={version.id}>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div 
-                        className="group flex items-center justify-between p-2 hover:bg-muted rounded-lg cursor-pointer transition-colors"
-                        onClick={() => handleVersionClick(version)}
-                      >
-                        <div className="flex items-center gap-2 min-w-0 flex-1">
-                          <History className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                          <div className="min-w-0 flex-1">
-                            <p className="text-sm font-medium truncate">{version.label}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {formatTimestamp(version.timestamp)}
-                            </p>
-                            <p className="text-xs text-muted-foreground truncate mt-1">
-                              {version.preview}
-                            </p>
-                          </div>
-                        </div>
-                        {index > 0 && currentStoryContent && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
-                            onClick={(e) => handleDiffClick(version, e)}
-                            title="View Changes"
-                          >
-                            <GitCompare className="h-3 w-3" />
-                          </Button>
-                        )}
-                      </div>
+                       <div 
+                         className="group flex items-center justify-between p-2 hover:bg-muted rounded-lg cursor-pointer transition-colors"
+                         onClick={() => handleVersionClick(version)}
+                         title="Click to view changes"
+                       >
+                         <div className="flex items-center gap-2 min-w-0 flex-1">
+                           <History className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                           <div className="min-w-0 flex-1">
+                             <p className="text-sm font-medium truncate">{version.label}</p>
+                             <p className="text-xs text-muted-foreground">
+                               {formatTimestamp(version.timestamp)}
+                             </p>
+                             <p className="text-xs text-muted-foreground truncate mt-1">
+                               {version.preview}
+                             </p>
+                           </div>
+                         </div>
+                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                           {currentStoryContent && (
+                             <Button
+                               variant="ghost"
+                               size="sm"
+                               className="h-6 w-6 p-0"
+                               onClick={(e) => handleDiffClick(version, e)}
+                               title="View Changes"
+                             >
+                               <GitCompare className="h-3 w-3" />
+                             </Button>
+                           )}
+                           <Button
+                             variant="ghost"
+                             size="sm"
+                             className="h-6 w-6 p-0"
+                             onClick={(e) => handleRestoreClick(version, e)}
+                             title="Restore This Version"
+                           >
+                             <RotateCcw className="h-3 w-3" />
+                           </Button>
+                         </div>
+                       </div>
                     </TooltipTrigger>
                     <TooltipContent side="right">
                       <div className="max-w-xs">
