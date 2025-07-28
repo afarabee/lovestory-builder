@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { 
   FolderOpen,
   GitBranch,
@@ -13,8 +14,13 @@ import {
   CheckCircle,
   Clock,
   AlertCircle,
-  Eye
+  Eye,
+  RotateCcw,
+  GitCompare
 } from "lucide-react";
+import { StoryVersion } from "@/hooks/useVersionHistory";
+import { DiffModal } from "@/components/version/DiffModal";
+import { RestoreConfirmDialog } from "@/components/version/RestoreConfirmDialog";
 
 interface ProjectInfo {
   name: string;
@@ -35,9 +41,28 @@ interface ProjectSidebarProps {
   showTestData?: boolean;
   onToggleTestData?: () => void;
   onNewStory?: () => void;
+  versions?: StoryVersion[];
+  currentStoryContent?: {
+    title: string;
+    description: string;
+    acceptanceCriteria: string[];
+    storyPoints: number;
+    testData?: any;
+  };
+  onRestoreVersion?: (version: StoryVersion) => void;
 }
 
-export function ProjectSidebar({ showTestData = false, onToggleTestData, onNewStory }: ProjectSidebarProps = {}) {
+export function ProjectSidebar({ 
+  showTestData = false, 
+  onToggleTestData, 
+  onNewStory, 
+  versions = [], 
+  currentStoryContent,
+  onRestoreVersion 
+}: ProjectSidebarProps = {}) {
+  const [selectedVersionForDiff, setSelectedVersionForDiff] = useState<StoryVersion | null>(null);
+  const [versionToRestore, setVersionToRestore] = useState<StoryVersion | null>(null);
+  const [showRestoreConfirm, setShowRestoreConfirm] = useState(false);
   const [projectInfo] = useState<ProjectInfo>({
     name: "E-commerce Platform",
     description: "Next-generation shopping experience with personalized recommendations",
@@ -100,6 +125,40 @@ export function ProjectSidebar({ showTestData = false, onToggleTestData, onNewSt
 
   const completionPercentage = (projectInfo.completedStories / projectInfo.storiesCount) * 100;
 
+  const formatTimestamp = (date: Date) => {
+    return new Intl.DateTimeFormat('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date);
+  };
+
+  const handleVersionClick = (version: StoryVersion) => {
+    setVersionToRestore(version);
+    setShowRestoreConfirm(true);
+  };
+
+  const handleDiffClick = (version: StoryVersion, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedVersionForDiff(version);
+  };
+
+  const handleRestoreConfirm = () => {
+    if (versionToRestore && onRestoreVersion) {
+      onRestoreVersion(versionToRestore);
+      setShowRestoreConfirm(false);
+      setVersionToRestore(null);
+    }
+  };
+
+  const handleRestoreFromDiff = (version: StoryVersion) => {
+    setSelectedVersionForDiff(null);
+    if (onRestoreVersion) {
+      onRestoreVersion(version);
+    }
+  };
+
   return (
     <div className="h-full flex flex-col p-4 space-y-4">
       {/* Quick Actions */}
@@ -144,21 +203,85 @@ export function ProjectSidebar({ showTestData = false, onToggleTestData, onNewSt
           <CardTitle className="text-base">Version History</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between items-center">
-              <span>Current Draft</span>
-              <span className="text-xs text-muted-foreground">2 min ago</span>
+          {versions.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-4">
+              No versions saved yet.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {versions.slice(0, 5).map((version, index) => (
+                <TooltipProvider key={version.id}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div 
+                        className="group flex items-center justify-between p-2 hover:bg-muted rounded-lg cursor-pointer transition-colors"
+                        onClick={() => handleVersionClick(version)}
+                      >
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          <History className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium truncate">{version.label}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {formatTimestamp(version.timestamp)}
+                            </p>
+                          </div>
+                        </div>
+                        {index > 0 && currentStoryContent && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
+                            onClick={(e) => handleDiffClick(version, e)}
+                            title="View Changes"
+                          >
+                            <GitCompare className="h-3 w-3" />
+                          </Button>
+                        )}
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">
+                      <div className="max-w-xs">
+                        <p className="font-medium">{version.label}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatTimestamp(version.timestamp)}
+                        </p>
+                        <p className="text-xs mt-1 truncate">"{version.title}"</p>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              ))}
+              
+              {versions.length > 5 && (
+                <p className="text-xs text-muted-foreground text-center pt-2">
+                  {versions.length - 5} more versions available
+                </p>
+              )}
             </div>
-            <div className="flex justify-between items-center text-muted-foreground">
-              <span>Initial Generation</span>
-              <span className="text-xs">5 min ago</span>
-            </div>
-          </div>
-          <Button variant="ghost" size="sm" className="w-full mt-3 text-xs">
-            View All Versions
-          </Button>
+          )}
         </CardContent>
       </Card>
+
+      {/* Modals */}
+      {selectedVersionForDiff && currentStoryContent && (
+        <DiffModal
+          isOpen={!!selectedVersionForDiff}
+          onClose={() => setSelectedVersionForDiff(null)}
+          version={selectedVersionForDiff}
+          currentContent={currentStoryContent}
+          onRestore={handleRestoreFromDiff}
+        />
+      )}
+      
+      <RestoreConfirmDialog
+        isOpen={showRestoreConfirm}
+        onClose={() => {
+          setShowRestoreConfirm(false);
+          setVersionToRestore(null);
+        }}
+        onConfirm={handleRestoreConfirm}
+        version={versionToRestore}
+      />
     </div>
   );
 }

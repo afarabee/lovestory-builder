@@ -37,6 +37,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SettingsModal } from "@/components/settings/SettingsModal";
+import { useVersionHistory, StoryVersion } from "@/hooks/useVersionHistory";
+import { useToast } from "@/hooks/use-toast";
 
 interface UserStory {
   id: string;
@@ -68,15 +70,28 @@ interface UploadedFile {
 interface StoryBuilderProps {
   showChat?: boolean;
   onToggleChat?: () => void;
-  onSetApplySuggestionHandler?: (handler: (type: string, content: string) => void) => void;
+  onSetApplySuggestionHandler?: (handler: (type: string, content: string) => void, restoreHandler?: (version: StoryVersion) => void) => void;
   showTestData?: boolean;
   onToggleTestData?: () => void;
   onNewStory?: () => void;
   storyGenerated?: boolean;
   onStoryGenerated?: () => void;
+  onVersionsChange?: (versions: StoryVersion[], currentContent: any) => void;
 }
 
-export function StoryBuilder({ showChat = false, onToggleChat, onSetApplySuggestionHandler, showTestData = false, onToggleTestData, onNewStory, storyGenerated = false, onStoryGenerated }: StoryBuilderProps = {}) {
+export function StoryBuilder({ 
+  showChat = false, 
+  onToggleChat, 
+  onSetApplySuggestionHandler, 
+  showTestData = false, 
+  onToggleTestData, 
+  onNewStory, 
+  storyGenerated = false, 
+  onStoryGenerated,
+  onVersionsChange 
+}: StoryBuilderProps = {}) {
+  const { toast } = useToast();
+  const { versions, saveVersion, getVersion, clearVersions } = useVersionHistory();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [dirtyCriteria, setDirtyCriteria] = useState(false);
   const [originalTitle, setOriginalTitle] = useState("");
@@ -116,9 +131,23 @@ export function StoryBuilder({ showChat = false, onToggleChat, onSetApplySuggest
   // Register the apply suggestion handler
   useEffect(() => {
     if (onSetApplySuggestionHandler) {
-      onSetApplySuggestionHandler(handleApplySuggestion);
+      onSetApplySuggestionHandler(handleApplySuggestion, handleRestoreVersion);
     }
   }, [onSetApplySuggestionHandler]);
+
+  // Notify parent component about version changes
+  useEffect(() => {
+    if (onVersionsChange) {
+      const currentContent = {
+        title: story.title,
+        description: story.description,
+        acceptanceCriteria: story.acceptanceCriteria,
+        storyPoints: story.storyPoints,
+        testData: testData
+      };
+      onVersionsChange(versions, currentContent);
+    }
+  }, [versions, story, testData, onVersionsChange]);
 
   // Track changes to title/description for dirty criteria indicator
   useEffect(() => {
@@ -190,6 +219,16 @@ export function StoryBuilder({ showChat = false, onToggleChat, onSetApplySuggest
     setOriginalDescription(generatedStory.description);
     setDirtyCriteria(false);
     setIsGenerating(false);
+
+    // Auto-save version after generation
+    const storyContent = {
+      title: generatedStory.title,
+      description: generatedStory.description,
+      acceptanceCriteria: generatedStory.acceptanceCriteria,
+      storyPoints: generatedStory.storyPoints,
+      testData: generatedTestData
+    };
+    saveVersion(storyContent, "Initial Generation");
   };
 
   const generateDevNotes = async () => {
@@ -251,6 +290,9 @@ export function StoryBuilder({ showChat = false, onToggleChat, onSetApplySuggest
       apiMocks: true,
       codeSnippets: true
     });
+    
+    // Clear version history
+    clearVersions();
     
     // Call parent reset handler
     onNewStory?.();
@@ -319,39 +361,99 @@ export function StoryBuilder({ showChat = false, onToggleChat, onSetApplySuggest
   };
 
   const handleApplySuggestion = (type: string, content: string) => {
+    let updatedStory = story;
+    let updatedTestData = testData;
+    let appliedField = '';
+
     // Apply suggestion based on type
     if (type === 'testing') {
       // Add to edge cases
-      setTestData(prev => ({
-        ...prev,
-        edgeCases: [...prev.edgeCases, content.split('.')[0]] // Take first sentence as edge case
-      }));
-      flashField('edge-cases');
+      updatedTestData = {
+        ...testData,
+        edgeCases: [...testData.edgeCases, content.split('.')[0]]
+      };
+      setTestData(updatedTestData);
+      appliedField = 'edge-cases';
     } else if (type === 'criteria') {
       // Add to acceptance criteria
-      setStory(prev => ({
-        ...prev,
-        acceptanceCriteria: [...prev.acceptanceCriteria, content.split('.')[0]]
-      }));
-      flashField('acceptance-criteria');
+      updatedStory = {
+        ...story,
+        acceptanceCriteria: [...story.acceptanceCriteria, content.split('.')[0]]
+      };
+      setStory(updatedStory);
+      appliedField = 'acceptance-criteria';
     } else if (type === 'story') {
       // Update story points if content mentions points
       if (content.toLowerCase().includes('point')) {
         const pointsMatch = content.match(/(\d+)\s*point/);
         if (pointsMatch) {
-          setStory(prev => ({
-            ...prev,
+          updatedStory = {
+            ...story,
             storyPoints: parseInt(pointsMatch[1])
-          }));
-          flashField('story-points');
+          };
+          setStory(updatedStory);
+          appliedField = 'story-points';
         }
       }
+    }
+
+    // Auto-save version after applying suggestion
+    if (appliedField) {
+      flashField(appliedField);
+      const storyContent = {
+        title: updatedStory.title,
+        description: updatedStory.description,
+        acceptanceCriteria: updatedStory.acceptanceCriteria,
+        storyPoints: updatedStory.storyPoints,
+        testData: updatedTestData
+      };
+      saveVersion(storyContent, `Applied ${type} suggestion`);
     }
   };
 
   const flashField = (fieldId: string) => {
     setAppliedFieldId(fieldId);
     setTimeout(() => setAppliedFieldId(null), 2000);
+  };
+
+  const handleRestoreVersion = (version: StoryVersion) => {
+    setStory(prev => ({
+      ...prev,
+      title: version.title,
+      description: version.description,
+      acceptanceCriteria: [...version.acceptanceCriteria],
+      storyPoints: version.storyPoints
+    }));
+
+    if (version.testData) {
+      setTestData({
+        userInputs: [...version.testData.userInputs],
+        edgeCases: [...version.testData.edgeCases],
+        apiResponses: [...version.testData.apiResponses],
+        codeSnippets: [...version.testData.codeSnippets]
+      });
+    }
+
+    toast({
+      title: "Version restored successfully",
+      description: `Restored: ${version.label}`,
+    });
+  };
+
+  const handleSaveManual = () => {
+    const storyContent = {
+      title: story.title,
+      description: story.description,
+      acceptanceCriteria: story.acceptanceCriteria,
+      storyPoints: story.storyPoints,
+      testData: testData
+    };
+    saveVersion(storyContent, "Manual Save");
+    
+    toast({
+      title: "Version saved",
+      description: "Current story state has been saved",
+    });
   };
 
   const regenerateCriteria = async () => {
@@ -645,7 +747,7 @@ export function StoryBuilder({ showChat = false, onToggleChat, onSetApplySuggest
                 </div>
               </div>
 
-              <div className="flex items-center gap-4">
+              <div className="flex items-center justify-between">
                 <div>
                   <Label htmlFor="story-points">Story Points</Label>
                   <Select value={story.storyPoints.toString()} onValueChange={(value) => setStory(prev => ({ ...prev, storyPoints: parseInt(value) }))}>
@@ -662,6 +764,17 @@ export function StoryBuilder({ showChat = false, onToggleChat, onSetApplySuggest
                     </SelectContent>
                   </Select>
                 </div>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleSaveManual}
+                  className="gap-2"
+                  disabled={!story.title}
+                >
+                  <History className="h-3 w-3" />
+                  Save Version
+                </Button>
               </div>
             </CardContent>
           </Card>

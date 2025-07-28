@@ -3,6 +3,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { StoryBuilder } from "@/components/story/StoryBuilder";
 import { ChatPanel } from "@/components/chat/ChatPanel";
 import { ProjectSidebar } from "@/components/sidebar/ProjectSidebar";
+import { StoryVersion } from "@/hooks/useVersionHistory";
 
 const Index = () => {
   const [showChat, setShowChat] = useState(false); // Hidden by default
@@ -10,6 +11,9 @@ const Index = () => {
   const [applySuggestionHandler, setApplySuggestionHandler] = useState<((type: string, content: string) => void) | null>(null);
   const [showTestData, setShowTestData] = useState(false);
   const [storyGenerated, setStoryGenerated] = useState(false); // Track if story has been generated
+  const [versions, setVersions] = useState<StoryVersion[]>([]);
+  const [currentStoryContent, setCurrentStoryContent] = useState<any>(null);
+  const [restoreVersionHandler, setRestoreVersionHandler] = useState<((version: StoryVersion) => void) | null>(null);
 
   const handleApplySuggestion = (type: string, content: string) => {
     applySuggestionHandler?.(type, content);
@@ -28,6 +32,19 @@ const Index = () => {
     setShowChat(false);
     setShowTestData(false);
     setChatHorizontallyCollapsed(false);
+    setVersions([]);
+    setCurrentStoryContent(null);
+  };
+
+  const handleVersionsChange = (newVersions: StoryVersion[], newCurrentContent: any) => {
+    setVersions(newVersions);
+    setCurrentStoryContent(newCurrentContent);
+  };
+
+  const handleRestoreVersion = (version: StoryVersion) => {
+    if (restoreVersionHandler) {
+      restoreVersionHandler(version);
+    }
   };
 
   return (
@@ -37,6 +54,9 @@ const Index = () => {
           showTestData={showTestData}
           onToggleTestData={() => setShowTestData(!showTestData)}
           onNewStory={handleNewStory}
+          versions={versions}
+          currentStoryContent={currentStoryContent}
+          onRestoreVersion={handleRestoreVersion}
         />
       }
       chatContent={
@@ -48,16 +68,22 @@ const Index = () => {
       }
       showChat={showChat}
     >
-      <StoryBuilder 
-        showChat={showChat}
-        onToggleChat={() => setShowChat(!showChat)}
-        onSetApplySuggestionHandler={setApplySuggestionHandler}
-        showTestData={showTestData}
-        onToggleTestData={() => setShowTestData(!showTestData)}
-        onNewStory={handleNewStory}
-        storyGenerated={storyGenerated}
-        onStoryGenerated={handleStoryGenerated}
-      />
+        <StoryBuilder 
+          showChat={showChat}
+          onToggleChat={() => setShowChat(!showChat)}
+          onSetApplySuggestionHandler={(handler, restoreHandler) => {
+            setApplySuggestionHandler(() => handler);
+            if (restoreHandler) {
+              setRestoreVersionHandler(() => restoreHandler);
+            }
+          }}
+          showTestData={showTestData}
+          onToggleTestData={() => setShowTestData(!showTestData)}
+          onNewStory={handleNewStory}
+          storyGenerated={storyGenerated}
+          onStoryGenerated={handleStoryGenerated}
+          onVersionsChange={handleVersionsChange}
+        />
     </AppLayout>
   );
 };
