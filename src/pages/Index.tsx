@@ -28,18 +28,22 @@ const Index = () => {
   };
 
   const handleNewStory = () => {
-    // Use the StoryBuilder's confirmation handler if available, otherwise reset directly
+    // If there's a StoryBuilder handler, call it for confirmation logic
     if (newStoryHandler) {
       newStoryHandler();
     } else {
-      // Fallback: Reset everything to initial state - hide chat and show only Raw Input
-      setStoryGenerated(false);
-      setShowChat(false);
-      setShowTestData(false);
-      setChatHorizontallyCollapsed(false);
-      setVersions([]);
-      setCurrentStoryContent(null);
+      // Fallback: Reset everything to initial state directly
+      resetToInitialState();
     }
+  };
+
+  const resetToInitialState = () => {
+    setStoryGenerated(false);
+    setShowChat(false);
+    setShowTestData(false);
+    setChatHorizontallyCollapsed(false);
+    setVersions([]);
+    setCurrentStoryContent(null);
   };
 
   const handleVersionsChange = (newVersions: StoryVersion[], newCurrentContent: any) => {
@@ -88,7 +92,7 @@ const Index = () => {
           }}
           showTestData={showTestData}
           onToggleTestData={() => setShowTestData(!showTestData)}
-          onNewStory={handleNewStory}
+          onNewStory={resetToInitialState}
           storyGenerated={storyGenerated}
           onStoryGenerated={handleStoryGenerated}
           onVersionsChange={handleVersionsChange}
