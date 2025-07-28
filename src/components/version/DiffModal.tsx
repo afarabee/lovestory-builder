@@ -41,17 +41,17 @@ export function DiffModal({ isOpen, onClose, version, currentContent, onRestore 
     }
     
     return (
-      <div className="space-y-2">
+      <div className="space-y-3">
         {oldText && (
-          <div className="p-2 bg-red-50 border border-red-200 rounded text-red-800 dark:bg-red-950 dark:border-red-800 dark:text-red-200">
-            <span className="text-xs font-medium text-red-600 dark:text-red-400">- REMOVED:</span>
-            <div className="mt-1">{oldText}</div>
+          <div className="p-3 bg-red-50 border-l-4 border-red-500 rounded-r text-red-900 dark:bg-red-950/50 dark:border-red-400 dark:text-red-100">
+            <span className="text-xs font-bold text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900 px-2 py-1 rounded">- REMOVED</span>
+            <div className="mt-2 font-medium line-through decoration-red-500 decoration-2">{oldText}</div>
           </div>
         )}
         {newText && (
-          <div className="p-2 bg-green-50 border border-green-200 rounded text-green-800 dark:bg-green-950 dark:border-green-800 dark:text-green-200">
-            <span className="text-xs font-medium text-green-600 dark:text-green-400">+ ADDED:</span>
-            <div className="mt-1">{newText}</div>
+          <div className="p-3 bg-green-50 border-l-4 border-green-500 rounded-r text-green-900 dark:bg-green-950/50 dark:border-green-400 dark:text-green-100">
+            <span className="text-xs font-bold text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900 px-2 py-1 rounded">+ ADDED</span>
+            <div className="mt-2 font-medium">{newText}</div>
           </div>
         )}
       </div>
@@ -71,15 +71,15 @@ export function DiffModal({ isOpen, onClose, version, currentContent, onRestore 
           </div>
         ))}
         {removed.map((item, index) => (
-          <div key={`removed-${index}`} className="p-2 bg-red-50 border border-red-200 rounded text-red-800 dark:bg-red-950 dark:border-red-800 dark:text-red-200">
-            <span className="text-xs font-medium text-red-600 dark:text-red-400">- REMOVED:</span>
-            <div className="mt-1">{item}</div>
+          <div key={`removed-${index}`} className="p-3 bg-red-50 border-l-4 border-red-500 rounded-r text-red-900 dark:bg-red-950/50 dark:border-red-400 dark:text-red-100">
+            <span className="text-xs font-bold text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900 px-2 py-1 rounded mb-2 inline-block">- REMOVED</span>
+            <div className="font-medium line-through decoration-red-500 decoration-2">{item}</div>
           </div>
         ))}
         {added.map((item, index) => (
-          <div key={`added-${index}`} className="p-2 bg-green-50 border border-green-200 rounded text-green-800 dark:bg-green-950 dark:border-green-800 dark:text-green-200">
-            <span className="text-xs font-medium text-green-600 dark:text-green-400">+ ADDED:</span>
-            <div className="mt-1">{item}</div>
+          <div key={`added-${index}`} className="p-3 bg-green-50 border-l-4 border-green-500 rounded-r text-green-900 dark:bg-green-950/50 dark:border-green-400 dark:text-green-100">
+            <span className="text-xs font-bold text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900 px-2 py-1 rounded mb-2 inline-block">+ ADDED</span>
+            <div className="font-medium">{item}</div>
           </div>
         ))}
       </div>
