@@ -124,7 +124,7 @@ export function StoryBuilder({
   const [isGenerating, setIsGenerating] = useState(false);
   const [isGeneratingDevNotes, setIsGeneratingDevNotes] = useState(false);
   const [hasDevNotes, setHasDevNotes] = useState(false);
-  const [devNotesOpen, setDevNotesOpen] = useState(false);
+  const [devNotesOpen, setDevNotesOpen] = useState(true);
   const [chatHorizontallyCollapsed, setChatHorizontallyCollapsed] = useState(false);
   const [appliedFieldId, setAppliedFieldId] = useState<string | null>(null);
   
