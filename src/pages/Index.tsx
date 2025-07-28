@@ -9,6 +9,7 @@ const Index = () => {
   const [showChat, setShowChat] = useState(false); // Hidden by default
   const [chatHorizontallyCollapsed, setChatHorizontallyCollapsed] = useState(false);
   const [applySuggestionHandler, setApplySuggestionHandler] = useState<((type: string, content: string) => void) | null>(null);
+  const [newStoryHandler, setNewStoryHandler] = useState<(() => void) | null>(null);
   const [showTestData, setShowTestData] = useState(false);
   const [storyGenerated, setStoryGenerated] = useState(false); // Track if story has been generated
   const [versions, setVersions] = useState<StoryVersion[]>([]);
@@ -27,13 +28,18 @@ const Index = () => {
   };
 
   const handleNewStory = () => {
-    // Reset everything to initial state - hide chat and show only Raw Input
-    setStoryGenerated(false);
-    setShowChat(false);
-    setShowTestData(false);
-    setChatHorizontallyCollapsed(false);
-    setVersions([]);
-    setCurrentStoryContent(null);
+    // Use the StoryBuilder's confirmation handler if available, otherwise reset directly
+    if (newStoryHandler) {
+      newStoryHandler();
+    } else {
+      // Fallback: Reset everything to initial state - hide chat and show only Raw Input
+      setStoryGenerated(false);
+      setShowChat(false);
+      setShowTestData(false);
+      setChatHorizontallyCollapsed(false);
+      setVersions([]);
+      setCurrentStoryContent(null);
+    }
   };
 
   const handleVersionsChange = (newVersions: StoryVersion[], newCurrentContent: any) => {
@@ -76,6 +82,9 @@ const Index = () => {
             if (restoreHandler) {
               setRestoreVersionHandler(() => restoreHandler);
             }
+          }}
+          onSetNewStoryHandler={(handler) => {
+            setNewStoryHandler(() => handler);
           }}
           showTestData={showTestData}
           onToggleTestData={() => setShowTestData(!showTestData)}

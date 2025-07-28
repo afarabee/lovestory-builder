@@ -78,6 +78,7 @@ interface StoryBuilderProps {
   storyGenerated?: boolean;
   onStoryGenerated?: () => void;
   onVersionsChange?: (versions: StoryVersion[], currentContent: any) => void;
+  onSetNewStoryHandler?: (handler: () => void) => void;
 }
 
 export function StoryBuilder({ 
@@ -89,7 +90,8 @@ export function StoryBuilder({
   onNewStory, 
   storyGenerated = false, 
   onStoryGenerated,
-  onVersionsChange 
+  onVersionsChange,
+  onSetNewStoryHandler 
 }: StoryBuilderProps = {}) {
   const { toast } = useToast();
   const { versions, saveVersion, getVersion, clearVersions } = useVersionHistory();
@@ -141,6 +143,13 @@ export function StoryBuilder({
       onSetApplySuggestionHandler(handleApplySuggestion, handleRestoreVersion);
     }
   }, [onSetApplySuggestionHandler]);
+
+  // Register the new story handler for external use (like sidebar)
+  useEffect(() => {
+    if (onSetNewStoryHandler) {
+      onSetNewStoryHandler(handleNewStoryClick);
+    }
+  }, [onSetNewStoryHandler]);
 
   // Notify parent component about version changes
   useEffect(() => {
