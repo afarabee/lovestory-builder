@@ -173,16 +173,22 @@ export function StoryBuilder({
       storyPoints: story.storyPoints,
       testData: testData
     };
-    saveVersion(storyContent, label);
-    setLastAutoSaveContent(createContentSnapshot());
-  }, [story, testData, saveVersion, createContentSnapshot]);
+    
+    // Check if content has actually changed before saving
+    const currentSnapshot = JSON.stringify(storyContent);
+    if (currentSnapshot !== lastAutoSaveContent) {
+      saveVersion(storyContent, label);
+      setLastAutoSaveContent(currentSnapshot);
+    }
+  }, [story, testData, saveVersion, lastAutoSaveContent]);
 
   // Debounced auto-save after 5 seconds of no typing
   useEffect(() => {
     const currentSnapshot = createContentSnapshot();
     
-    // Only set up auto-save if content has changed and story has content
-    if (currentSnapshot !== lastAutoSaveContent && story.title.trim()) {
+    // Only set up auto-save if content has changed and story has meaningful content
+    if (currentSnapshot !== lastAutoSaveContent && 
+        (story.title.trim() || story.description.trim() || story.acceptanceCriteria.length > 0)) {
       // Clear existing timeout
       if (autoSaveTimeoutRef.current) {
         clearTimeout(autoSaveTimeoutRef.current);
@@ -201,12 +207,13 @@ export function StoryBuilder({
     };
   }, [story, testData, lastAutoSaveContent, createContentSnapshot, saveAutoVersion]);
 
-  // Auto-save every 5 minutes if content changed
+  // Auto-save every 2 minutes if content changed
   useEffect(() => {
-    // Set up 5-minute interval
+    // Set up 2-minute interval
     autoSaveIntervalRef.current = setInterval(() => {
       const currentSnapshot = createContentSnapshot();
-      if (currentSnapshot !== lastAutoSaveContent && story.title.trim()) {
+      if (currentSnapshot !== lastAutoSaveContent && 
+          (story.title.trim() || story.description.trim() || story.acceptanceCriteria.length > 0)) {
         const now = new Date();
         const timeString = now.toLocaleTimeString('en-US', { 
           hour: '2-digit', 
@@ -215,14 +222,14 @@ export function StoryBuilder({
         });
         saveAutoVersion(`Auto-Save @ ${timeString}`);
       }
-    }, 5 * 60 * 1000); // 5 minutes
+    }, 2 * 60 * 1000); // 2 minutes
 
     return () => {
       if (autoSaveIntervalRef.current) {
         clearInterval(autoSaveIntervalRef.current);
       }
     };
-  }, [story.title, createContentSnapshot, lastAutoSaveContent, saveAutoVersion]);
+  }, [story.title, story.description, story.acceptanceCriteria, createContentSnapshot, lastAutoSaveContent, saveAutoVersion]);
 
   // Clean up timers on unmount
   useEffect(() => {

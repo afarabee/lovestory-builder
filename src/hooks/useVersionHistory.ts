@@ -8,6 +8,7 @@ export interface StoryVersion {
   description: string;
   acceptanceCriteria: string[];
   storyPoints: number;
+  preview: string; // First line of description
   testData?: {
     userInputs: string[];
     edgeCases: string[];
@@ -33,6 +34,11 @@ export function useVersionHistory() {
   const [versions, setVersions] = useState<StoryVersion[]>([]);
 
   const saveVersion = useCallback((content: StoryContent, label: string) => {
+    // Create preview from first line of description
+    const preview = content.description.split('\n')[0].substring(0, 60);
+    const truncatedPreview = preview.length < content.description.split('\n')[0].length ? 
+      preview + '...' : preview;
+
     const newVersion: StoryVersion = {
       id: `v_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       timestamp: new Date(),
@@ -41,6 +47,7 @@ export function useVersionHistory() {
       description: content.description,
       acceptanceCriteria: [...content.acceptanceCriteria],
       storyPoints: content.storyPoints,
+      preview: truncatedPreview || content.title || "Untitled",
       testData: content.testData ? {
         userInputs: [...content.testData.userInputs],
         edgeCases: [...content.testData.edgeCases],

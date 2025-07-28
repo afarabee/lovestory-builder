@@ -224,6 +224,9 @@ export function ProjectSidebar({
                             <p className="text-xs text-muted-foreground">
                               {formatTimestamp(version.timestamp)}
                             </p>
+                            <p className="text-xs text-muted-foreground truncate mt-1">
+                              {version.preview}
+                            </p>
                           </div>
                         </div>
                         {index > 0 && currentStoryContent && (
