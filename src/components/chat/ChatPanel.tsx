@@ -35,10 +35,6 @@ interface ChatMessage {
   hasUserFacingSuggestion?: boolean;
 }
 
-interface TestDataUpdate {
-  type: 'user-input' | 'edge-case' | 'api-response';
-  content: string;
-}
 
 interface ChatPanelProps {
   onApplySuggestion?: (type: string, content: string) => void;
@@ -62,7 +58,7 @@ export function ChatPanel({ onApplySuggestion, onUndoSuggestion, isHorizontallyC
 
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [testDataUpdates, setTestDataUpdates] = useState<TestDataUpdate[]>([]);
+  
   const [lastAppliedSuggestion, setLastAppliedSuggestion] = useState<ChatMessage | null>(null);
   
   // Scroll management
@@ -153,13 +149,6 @@ export function ChatPanel({ onApplySuggestion, onUndoSuggestion, isHorizontallyC
       hasUserFacingSuggestion: responseData.hasUserFacingSuggestion || false
     };
 
-    // Generate test data updates based on context
-    if (inputValue.toLowerCase().includes('edge case') || inputValue.toLowerCase().includes('error')) {
-      setTestDataUpdates(prev => [...prev, {
-        type: 'edge-case',
-        content: 'User submits form with special characters in email'
-      }]);
-    }
 
     setMessages(prev => [...prev, aiResponse]);
     setIsTyping(false);
@@ -489,25 +478,6 @@ export function ChatPanel({ onApplySuggestion, onUndoSuggestion, isHorizontallyC
           </Button>
         )}
 
-        {/* Test Data Updates */}
-        {testDataUpdates.length > 0 && (
-          <div className="p-4 border-t bg-accent/10">
-            <div className="text-xs font-medium mb-2 flex items-center gap-1">
-              <TestTube className="h-3 w-3" />
-              Test Data Updated
-            </div>
-            <div className="space-y-1">
-              {testDataUpdates.slice(-3).map((update, index) => (
-                <div key={index} className="text-xs bg-accent/20 p-2 rounded">
-                  <Badge variant="outline" className="text-xs mb-1">
-                    {update.type.replace('-', ' ')}
-                  </Badge>
-                  <p>{update.content}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
 
             {/* Enhanced Input */}
