@@ -441,7 +441,7 @@ export function ChatPanel({ onApplySuggestion, onUndoSuggestion, isHorizontallyC
                           className="gap-1 text-xs h-6 text-muted-foreground hover:text-foreground"
                         >
                           <Undo2 className="h-3 w-3" />
-                          Undo Suggestion
+                          Undo
                         </Button>
                       )}
                     </div>
