@@ -37,6 +37,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SettingsModal } from "@/components/settings/SettingsModal";
+import { NewStoryConfirmDialog } from "@/components/ui/new-story-confirm-dialog";
 import { useVersionHistory, StoryVersion } from "@/hooks/useVersionHistory";
 import { useToast } from "@/hooks/use-toast";
 
@@ -127,6 +128,7 @@ export function StoryBuilder({
   const [devNotesOpen, setDevNotesOpen] = useState(true);
   const [chatHorizontallyCollapsed, setChatHorizontallyCollapsed] = useState(false);
   const [appliedFieldId, setAppliedFieldId] = useState<string | null>(null);
+  const [showNewStoryConfirm, setShowNewStoryConfirm] = useState(false);
   
   // Auto-save state
   const [lastAutoSaveContent, setLastAutoSaveContent] = useState<string>('');
@@ -314,7 +316,7 @@ export function StoryBuilder({
     setDirtyCriteria(false);
     setIsGenerating(false);
 
-    // Auto-save version after generation
+    // Auto-save version after generation - always save as "Initial Generation"
     const storyContent = {
       title: generatedStory.title,
       description: generatedStory.description,
@@ -400,6 +402,27 @@ export function StoryBuilder({
     
     // Call parent reset handler
     onNewStory?.();
+  };
+
+  const handleNewStoryClick = () => {
+    // Show confirmation dialog if there's any content in the current story
+    const hasContent = story.title.trim() || story.description.trim() || 
+                      story.acceptanceCriteria.length > 0 || rawInput.trim();
+    
+    if (hasContent) {
+      setShowNewStoryConfirm(true);
+    } else {
+      newStory();
+    }
+  };
+
+  const handleConfirmNewStory = () => {
+    setShowNewStoryConfirm(false);
+    newStory();
+  };
+
+  const handleCancelNewStory = () => {
+    setShowNewStoryConfirm(false);
   };
 
   const restartStory = async () => {
@@ -598,6 +621,11 @@ export function StoryBuilder({
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
       />
+      <NewStoryConfirmDialog
+        isOpen={showNewStoryConfirm}
+        onConfirm={handleConfirmNewStory}
+        onCancel={handleCancelNewStory}
+      />
       <div className="p-6 space-y-6">
       {/* Progress Header - Only show when story is generated */}
       {storyGenerated && (
@@ -621,7 +649,7 @@ export function StoryBuilder({
               Chat
             </Button>
             <Button 
-              onClick={newStory}
+              onClick={handleNewStoryClick}
               variant="outline"
               className="gap-2"
             >

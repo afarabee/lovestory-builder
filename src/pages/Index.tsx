@@ -27,7 +27,7 @@ const Index = () => {
   };
 
   const handleNewStory = () => {
-    // Reset everything to initial state
+    // Reset everything to initial state - hide chat and show only Raw Input
     setStoryGenerated(false);
     setShowChat(false);
     setShowTestData(false);
