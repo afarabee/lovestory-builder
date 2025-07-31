@@ -1,8 +1,7 @@
-
 # 📋 REQUIREMENTS.md
 
 ## Overview
-This document outlines the **complete functional, behavioral, and UI/UX requirements** for the `Story Builder` application — an AI-assisted tool that generates, refines, and manages agile user stories.
+This document outlines the complete functional, behavioral, and UI/UX requirements for the Story Builder application — an AI-assisted tool that generates, refines, and manages agile user stories, and pushes finalized stories to Azure DevOps (ADO) as Product Backlog Items (PBIs).
 
 ---
 
@@ -10,13 +9,13 @@ This document outlines the **complete functional, behavioral, and UI/UX requirem
 
 - **Initial Load Behavior**:
   - When app loads or user starts a new story, only the **Raw Input** section is visible (full screen width).
-  - Sections like **User Story Details**, **Dev Notes**, **Push to ADO**, **Chat**, and **session Data** should be hidden.
+  - Sections like **User Story Details**, **Dev Notes**, **Push to ADO**, **Chat**, and **Session Data** should be hidden.
 
 - **Sidebar (Left Navigation)**:
   - Contains the following Quick Action buttons:
     1. `+ New User Story`
     2. `Restart Story`
-    3. `Show session Data`
+    3. `Show Session Data`
     4. `Version History`
   - Version History button opens a history panel.
 
@@ -110,17 +109,33 @@ This document outlines the **complete functional, behavioral, and UI/UX requirem
 - Only accessible from top right header
 - Opens modal overlay that blocks interaction with the main UI until explicitly closed by the user
 - Fields include:
-  - Project Metadata: Essential contextual information about the project that must be referenced by the language model (LLM) during story generation.
-  - Azure DevOps (ADO) Integration: Configuration to specify the target ADO organization, project, and repository where stories will be created. This setting determines the destination for all push-to-ADO operations.
-  - GitHub Repository Integration (optional): Configuration details for linking to source code repositories to enrich AI context.
-  - Prompting Behavior Preferences: User-configurable settings that guide how the LLM formulates story content, such as tone, level of detail, or template adherence.
-  - File Library for Knowledge Base: Upload and manage project-specific documents and reference files that serve as supplemental knowledge sources for the AI prompt.
-- The application must incorporate these project settings and files as part of the LLM input prompts when generating or refining stories, ensuring AI outputs are contextually relevant and aligned with project standards.
+  - Project Metadata
+  - Azure DevOps (ADO) Integration
+  - GitHub Repository Integration (used for Developer Notes generation)
+  - Prompting Behavior Preferences
+  - File Library for Knowledge Base
+- All project settings must be used as context in LLM prompt generation.
 - Must remain open until user explicitly exits
 
 ---
 
-## 7. 🧼 New User Story Flow
+## 7. 🧑‍💻 Developer Notes
+
+- After generating a user story, users can optionally click `Generate Developer Notes`.
+- This triggers a call to the integrated GitHub repository using the following as input:
+  - Story title
+  - Description
+  - Acceptance Criteria
+- The system queries the codebase and suggests:
+  - Relevant files, functions, or modules likely impacted
+  - Code patterns or areas to update
+  - High-level implementation ideas or steps
+- Output is formatted and **appended to the story’s Description field** before pushing to ADO.
+- Developer Notes are visible in the UI and editable prior to push.
+
+---
+
+## 8. 🧼 New User Story Flow
 
 - Action from header or sidebar
 - Displays confirmation modal:
@@ -133,19 +148,19 @@ This document outlines the **complete functional, behavioral, and UI/UX requirem
 
 ---
 
-## 8. 🔄 General UI Rules
+## 9. 🔄 General UI Rules
 
 - No vertical expand/collapse buttons for chat
 - Collapsing chat horizontally should:
   - Hide panel entirely
   - Expand Story Builder view to full width
-- Chat panel should **auto-scroll** to show lasession response
+- Chat panel should **auto-scroll** to show latest response
   - Include sticky `Scroll to Bottom` button
 - Avoid repeated phrases like "I understand you want to refine..."
 
 ---
 
-## 9. 📦 Miscellaneous Requirements
+## 10. 📦 Miscellaneous Requirements
 
 - Only show the ⚠️ AC warning icon if title or description has changed
 - Suggestions from chat must reflect capabilities of current UI (e.g. no "split into multiple stories")
@@ -154,9 +169,11 @@ This document outlines the **complete functional, behavioral, and UI/UX requirem
 
 ---
 
-## 10. ADO Requirements
+## 11. ADO Requirements
+
 - Creating a work item via push to ADO results in a Product Backlog Item (PBI) of type “Story” within the Area Path defined in the Story Builder’s Project Settings.
 - The Iteration Path and Tags applied in ADO exactly match those specified in the Story Builder configuration for the story.
 - The “chatgpt” tag (case-sensitive) is automatically added to every created story in ADO.
 - The Created By field on the ADO story correctly reflects the user’s name who performed the push, not a system or service account.
 - All Acceptance Criteria are formatted as bullet points, preserving clear, individual criteria lines within the story.
+- If Developer Notes were generated, they are appended to the Description field in ADO.
