@@ -24,6 +24,8 @@ This document outlines the complete step-by-step flow of how the `lovestory-buil
 - 🧩 **LangChain Component**: `PromptTemplate` injects values into story generation prompt  
 - 📎 **Prompt Ref**: `generate_user_story_prompt`
 
+
+
 ---
 
 ### **2.5. Inject Project Settings into Prompt Context**
@@ -46,8 +48,16 @@ This document outlines the complete step-by-step flow of how the `lovestory-buil
     - Tone: Professional and concise
     - Format: Must follow: "As a [user], I want [goal] so that [benefit]".
     ```
-- 🔄 This context is prepended to the prompt before calling the LLM
-- 🧠 **Component**: `PromptTemplate`, optionally `MultiPromptChain` or memory-injected chain
+- If project has uploaded files:
+  - Extract text
+  - Chunk into passages
+  - Generate embeddings
+  - Query vector DB using prompt context
+  - Inject top-N matches into LLM prompt
+- This context is prepended to the prompt before calling the LLM
+- Use embeddings to retrieve relevant stories from past examples (RAG input boost)
+- Construct final system prompt (prepended)
+- Component: `PromptTemplate` + `VectorStoreRetriever`
 
 ---
 
@@ -92,6 +102,10 @@ This document outlines the complete step-by-step flow of how the `lovestory-buil
   The user has asked: "{{user_input}}"
   Suggest an improvement ONLY to the {{field}}. Return suggestion only.
   ```
+- Let LangChain retrieve similar refinements from a vector DB before prompting
+- 🔄 Component: `VectorStoreRetriever` + `StuffDocumentsChain` or `RetrievalQA`
+- Optionally query RAG context again
+- Return improved field
 - 🧠 **Component**: `LLMChain` + conditional routing logic (e.g., classify → rewrite)
 - 🔄 Output = new field value
 
@@ -122,10 +136,31 @@ This document outlines the complete step-by-step flow of how the `lovestory-buil
 
 ---
 
-### **10. Push to ADO (Manual/Planned)**
-- User can optionally push story to Azure DevOps
-- 🔄 Fields passed via ADO API (future integration)
-- 🧠 Optional: LLM can summarize for commit messages or ticket descriptions
+### 10. Generate Developer Notes (Optional)
+- User clicks `Generate Developer Notes`
+- System sends:
+  - Story title
+  - Description
+  - Acceptance Criteria
+- LangChain queries GitHub repo via integration
+- LLM returns:
+  - Relevant code areas
+  - Suggested changes
+  - Implementation hints
+- Dev Notes appended to the Description field
+- Component: GitHub connector + LangChain
+
+---
+
+### **11. Push to ADO (Manual/Planned)**
+- User clicks Push to ADO
+- Fields sent to ADO:
+  - Title
+  - Description (with Dev Notes if added)
+  - Acceptance Criteria
+  - Tags, Iteration Path
+- Optional: LLM can summarize for commit messages or ticket descriptions
+- Component: ADO API integration
 
 ---
 
