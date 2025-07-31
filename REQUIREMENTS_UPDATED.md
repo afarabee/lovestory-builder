@@ -114,7 +114,8 @@ This document outlines the complete functional, behavioral, and UI/UX requiremen
   - GitHub Repository Integration (used for Developer Notes generation)
   - Prompting Behavior Preferences
   - File Library for Knowledge Base
-- All project settings must be used as context in LLM prompt generation.
+- All project settings and uploaded files must be incorporated into the prompt context.
+- File uploads require a RAG pipeline: extracted, chunked, embedded, and queried at runtime.
 - Must remain open until user explicitly exits
 
 ---
