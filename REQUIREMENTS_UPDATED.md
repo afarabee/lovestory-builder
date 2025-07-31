@@ -109,6 +109,7 @@ This document outlines the **complete functional, behavioral, and UI/UX requirem
   - Project metadata
   - GitHub repo integration (optional)
   - Prompting behavior preferences
+  - File library for knowledge base
 - Must remain open until user explicitly exits
 
 ---
