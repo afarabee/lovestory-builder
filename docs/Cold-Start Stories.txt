@@ -1,0 +1,33 @@
+Two cold-alignment stories generated using StoryPrompt_v1 with no artefact bleed, example contamination, or logic assumptions
+
+
+Story 1 – API Rate Limiting (Infra)
+Title
+Implement rate limiting for internal API consumers
+Description
+Rate limiting protects internal infrastructure from misuse.
+Apply throttling policies to avoid resource saturation.
+Acceptance Criteria
+API gateway enforces a fixed request limit per minute
+Excess traffic receives a 429 response with retry headers
+Rate-limited traffic is logged for observability and tuning
+Story Points
+3 – Requires testing and configuration of policies in multiple environments
+Tags
+infra, throttling, api-gateway
+
+
+Story 2 – Logging Policy Update (Governance)
+Title
+Add audit logging to sensitive API operations
+Description
+Critical API calls require consistent audit coverage.
+Log all operations involving customer records.
+Acceptance Criteria
+Audit logs capture timestamp, user ID, and operation type
+Logging is applied to create, update, and delete endpoints
+Logs are ingested by the central analytics platform
+Story Points
+2 – Simple policy addition with minor coordination
+Tags
+logging, audit, api-security
