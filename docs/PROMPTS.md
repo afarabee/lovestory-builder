@@ -2,6 +2,8 @@
 
 This file contains all literal prompt templates used by the `lovestory-builder` application for AI-assisted user story generation and refinement. These are designed for use with LangChain's `PromptTemplate` or equivalent components, with dynamic variables injected based on project settings, user input, and UI state.
 
+###File needs to be updated to include retrieval functions###
+
 ---
 
 ## 📌 `generate_user_story_prompt`
