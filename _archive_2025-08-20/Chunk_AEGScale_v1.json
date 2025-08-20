@@ -1,7 +1,0 @@
-{
-  "chunk_name": "AEGScale",
-  "version": "v1",
-  "chunk_type": "reference",
-  "domain": "agnostic",
-  "content": "AEG Story Effort Estimation Scale:\n1 point  \u2013 < 0.5 day       (Trivial)\n2 points \u2013 0.5\u20131.5 days    (Simple)\n3 points \u2013 2\u20133 days        (Medium \u2013 most tasks)\n5 points \u2013 3\u20135 days        (Large)\n8+ points \u2013 >5 days        (Must be split)"
-}
