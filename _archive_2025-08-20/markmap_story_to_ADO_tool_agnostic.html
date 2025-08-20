@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+<title>Markmap</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+}
+html {
+  font-family: ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+}
+#mindmap {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+}
+.markmap-dark {
+  background: #27272a;
+  color: white;
+}
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/markmap-toolbar@0.18.12/dist/style.css">
+</head>
+<body>
+<svg id="mindmap"></svg>
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script><script src="https://cdn.jsdelivr.net/npm/markmap-view@0.18.12/dist/browser/index.js"></script><script src="https://cdn.jsdelivr.net/npm/markmap-toolbar@0.18.12/dist/index.js"></script><script>(()=>{setTimeout(()=>{const{markmap:S,mm:Q}=window,$=new S.Toolbar;$.attach(Q);const I=$.render();I.setAttribute("style","position:absolute;bottom:20px;right:20px"),document.body.append(I)})})()</script><script>((l,U,M,R)=>{const N=l();window.mm=N.Markmap.create("svg#mindmap",(U||N.deriveOptions)(R),M),window.matchMedia("(prefers-color-scheme: dark)").matches&&document.documentElement.classList.add("markmap-dark")})(()=>window.markmap,null,{"content":"AI-Assisted User Story Flow (Markmap View)","children":[{"content":"Step-by-Step Flow","children":[{"content":"1. App Initialization","children":[{"content":"Display only Raw Input","children":[],"payload":{"tag":"li","lines":"5,6"}},{"content":"No AI processing yet","children":[],"payload":{"tag":"li","lines":"6,8"}}],"payload":{"tag":"h3","lines":"4,5"}},{"content":"2. User Completes Raw Input Form","children":[{"content":"Enters Role, Goal, Benefit","children":[],"payload":{"tag":"li","lines":"9,10"}},{"content":"Input is passed to backend service","children":[],"payload":{"tag":"li","lines":"10,11"}},{"content":"Backend prepares data for prompt generation","children":[],"payload":{"tag":"li","lines":"11,13"}}],"payload":{"tag":"h3","lines":"8,9"}},{"content":"2.5 Inject Project Settings and Context","children":[{"content":"Include project metadata (name, personas, domain)","children":[],"payload":{"tag":"li","lines":"14,15"}},{"content":"Apply AI preferences (tone, structure, format)","children":[],"payload":{"tag":"li","lines":"15,16"}},{"content":"If files exist, retrieve relevant content","children":[],"payload":{"tag":"li","lines":"16,17"}},{"content":"Assemble all into a structured system prompt","children":[],"payload":{"tag":"li","lines":"17,19"}}],"payload":{"tag":"h3","lines":"13,14"}},{"content":"3. AI Generates Story","children":[{"content":"Prompt is sent to the model (e.g., OpenAI)","children":[],"payload":{"tag":"li","lines":"20,21"}},{"content":"Output: title, description, acceptance criteria, story points","children":[],"payload":{"tag":"li","lines":"21,23"}}],"payload":{"tag":"h3","lines":"19,20"}},{"content":"4. UI Updates with Story","children":[{"content":"Populate Story Details panel","children":[],"payload":{"tag":"li","lines":"24,25"}},{"content":"Display Dev Notes button","children":[],"payload":{"tag":"li","lines":"25,26"}},{"content":"Expand Chat Panel","children":[],"payload":{"tag":"li","lines":"26,27"}},{"content":"Show Session Data Viewer if toggled","children":[],"payload":{"tag":"li","lines":"27,29"}}],"payload":{"tag":"h3","lines":"23,24"}},{"content":"5. Chat Panel Activated","children":[{"content":"User types refinement suggestions","children":[],"payload":{"tag":"li","lines":"30,31"}},{"content":"Request sent to backend for re-generation","children":[],"payload":{"tag":"li","lines":"31,33"}}],"payload":{"tag":"h3","lines":"29,30"}},{"content":"6. Backend Handles Refinement","children":[{"content":"Build new prompt using story + user input","children":[],"payload":{"tag":"li","lines":"34,35"}},{"content":"If needed, re-query relevant context","children":[],"payload":{"tag":"li","lines":"35,36"}},{"content":"Return only the improved field","children":[],"payload":{"tag":"li","lines":"36,38"}}],"payload":{"tag":"h3","lines":"33,34"}},{"content":"7. Suggestion Displayed","children":[{"content":"If actionable &#x2192; show Apply and Undo","children":[],"payload":{"tag":"li","lines":"39,40"}},{"content":"Update session data only (not saved)","children":[],"payload":{"tag":"li","lines":"40,42"}}],"payload":{"tag":"h3","lines":"38,39"}},{"content":"8. Apply Suggestion","children":[{"content":"Updates session data","children":[],"payload":{"tag":"li","lines":"43,44"}},{"content":"UI reflects changes","children":[],"payload":{"tag":"li","lines":"44,46"}}],"payload":{"tag":"h3","lines":"42,43"}},{"content":"9. Version Snapshot Triggered","children":[{"content":"Automatically snapshot story content on update","children":[],"payload":{"tag":"li","lines":"47,48"}},{"content":"Store timestamped version in session history","children":[],"payload":{"tag":"li","lines":"48,50"}}],"payload":{"tag":"h3","lines":"46,47"}},{"content":"10. Push to ADO","children":[{"content":"User clicks Push to ADO","children":[],"payload":{"tag":"li","lines":"51,52"}},{"content":"Send final story fields via ADO integration","children":[],"payload":{"tag":"li","lines":"52,53"}},{"content":"Optional: Add commit message or tagging","children":[],"payload":{"tag":"li","lines":"53,55"}}],"payload":{"tag":"h3","lines":"50,51"}}],"payload":{"tag":"h2","lines":"2,3"}},{"content":"Optional: Contextual Enhancements","children":[{"content":"Retrieve file-based context when story is first generated","children":[],"payload":{"tag":"li","lines":"56,57"}},{"content":"Use retrieved examples to support refinement requests","children":[],"payload":{"tag":"li","lines":"57,58"}}],"payload":{"tag":"h2","lines":"55,56"}}],"payload":{"tag":"h1","lines":"0,1"}},null)</script>
+</body>
+</html>
