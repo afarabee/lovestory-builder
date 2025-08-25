@@ -37,7 +37,7 @@ export function AppLayout({
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="h-16 border-b border-border bg-card flex items-center justify-between px-6">
+      <header className="h-16 border-b border-border bg-header text-header-foreground flex items-center justify-between px-6">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <Zap className="h-6 w-6 text-primary" />

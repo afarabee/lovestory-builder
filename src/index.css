@@ -57,6 +57,10 @@ All colors MUST be HSL.
     --sidebar-width: 280px;
     --header-height: 64px;
     --chat-width: 400px;
+    
+    /* Header */
+    --header-background: 217 91% 25%;
+    --header-foreground: 0 0% 100%;
 
     --radius: 0.75rem;
 
