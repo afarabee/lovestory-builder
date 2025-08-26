@@ -1,19 +1,20 @@
 from openai import OpenAI
 import json
 
-client = OpenAI(api_key="...")  # or just rely on env var
-
+# IMPORTANT: Do not hardcode your API key in production code.
+# Use environment variables instead.
+client = OpenAI(api_key="...")  # or env var
 
 def pretty_print(output: str):
     """
-    Try to pretty-print JSON-like text; otherwise return as-is.
+    Tries to pretty-print JSON-like text; otherwise returns as-is.
+    This is useful for making raw JSON output more readable.
     """
     try:
         parsed = json.loads(output)
         return json.dumps(parsed, indent=2)
     except Exception:
         return output.strip()
-
 
 def generate_user_story(
     raw_input: str,
@@ -24,48 +25,58 @@ def generate_user_story(
     model: str = "gpt-4o"
 ):
     """
-    Generate a user story. Try parsing JSON, but fall back to pretty-print text if invalid.
+    Turns raw input into a structured user story using project context.
+    The function handles both valid JSON and plain-text output from the model.
     """
 
-    instruction = f"""You are an expert AI product partner helping Agile Product Owners generate high-quality user stories
-and testable acceptance criteria for export to Azure DevOps.
+    # The 'instruction' variable is a well-formatted prompt for the model.
+    instruction = f"""You are an expert AI product partner helping Agile Product Owners generate high-quality user stories and testable acceptance criteria for export to Azure DevOps.
 
-Context (knowledge base):
-- Project: {context.get('project_name')}
-- Description: {context.get('project_description')}
-- Persona: {context.get('persona')}
-- Tone: {context.get('tone')}
-- Format: {context.get('format')}
+    Context (knowledge base):
+    - Project: {context.get('project_name')}
+    - Description: {context.get('project_description')}
+    - Persona: {context.get('persona')}
+    - Tone: {context.get('tone')}
+    - Format: {context.get('format')}
 
-Additional inputs:
-- Raw input: {raw_input}
-- Custom prompt: {custom_prompt}
-- File content: {file_content}
-- Project context: {project_context}
+    Additional inputs:
+    - Raw input: {raw_input}
+    - Custom prompt: {custom_prompt}
+    - File content: {file_content}
+    - Project context: {project_context}
 
-Task:
-Produce an INVEST-quality user story aligned to the context.
-Return JSON if possible, but if not, just return text.
-"""
+    Task:
+    Produce an INVEST-quality user story aligned to the context.
+    The user story should include a title, description, and testable acceptance criteria in bullet points.
+    Do NOT include a 'definition of done' section.
+    Do NOT use Gherkin (Given/When/Then) format for the acceptance criteria.
+    Return JSON if possible, but if not, just return text.
+    """
 
-    resp = client.responses.create(
+    # Make the API call to OpenAI.
+    # Note: Use chat.completions.create for modern models like gpt-4o.
+    response = client.chat.completions.create(
         model=model,
-        input=instruction,
-        temperature=0.0,
+        messages=[{"role": "user", "content": instruction}],
+        temperature=0.0
     )
 
-    output = resp.output_text
+    output = response.choices[0].message.content
 
-    # Try strict JSON parsing first
+    # Try to parse the output as strict JSON.
     try:
         parsed = json.loads(output)
-        return parsed  # return dict if valid JSON
+        # Explicitly remove the "definition_of_done" key if it exists.
+        parsed.pop("definition_of_done", None)
+        return parsed  # Return a dictionary if the parsing is successful.
     except json.JSONDecodeError:
+        # This block runs if the output is not valid JSON.
         print("⚠️ Model did not return valid JSON. Showing formatted output instead.\n")
-        return pretty_print(output)
-
+        # You may need to manually process the text output to remove "Definition of Done".
+        return pretty_print(output)  # Fallback to formatting as a plain string.
 
 if __name__ == "__main__":
+    # This is the main block that runs when you execute the script directly.
     raw_input = "As a user, I want to reset my password so that I can regain access if I forget it."
     custom_prompt = "Focus on security and user experience."
     file_content = "Related requirements: Password must be at least 12 characters, include a number and a symbol."
@@ -86,8 +97,10 @@ if __name__ == "__main__":
         project_context=project_context
     )
 
-    # If dict, pretty print JSON; if string, it's already formatted
+    # This conditional checks the type of the result and prints it appropriately.
     if isinstance(result, dict):
+        print("✅ Success! The model returned valid JSON.\n")
         print(json.dumps(result, indent=2))
     else:
+        print("❌ The model returned text, not JSON.\n")
         print(result)

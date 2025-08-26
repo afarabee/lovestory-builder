@@ -13,7 +13,8 @@ def pretty_print(output: str):
         return output.strip()
 
 # Whitelist to prevent arbitrary field edits
-ALLOWED_FIELDS = {"title", "description", "acceptance_criteria", "definition_of_done", "story_points", "tags"}
+# Note: 'definition_of_done' has been removed for consistency.
+ALLOWED_FIELDS = {"title", "description", "acceptance_criteria", "story_points", "tags"}
 
 def refine_field(
     existing_story: dict,
@@ -41,17 +42,23 @@ Rules:
 - Modify ONLY this field.
 - Keep the data type: 
   - title/description => string
-  - acceptance_criteria/definition_of_done/tags => array of strings
+  - acceptance_criteria/tags => array of strings
   - story_points => integer 1–13
 - Return JSON with ONLY this key.
 
 Return JSON like:
 {{ "{field_name}": <new_value> }}
 """
-    resp = client.responses.create(model=model, input=prompt, temperature=0.2)
-    output = resp.output_text
+    # CORRECTED API CALL: Use the modern chat.completions endpoint.
+    response = client.chat.completions.create(
+        model=model,
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.2
+    )
+
+    output = response.choices[0].message.content
     try:
         return json.loads(output)
     except json.JSONDecodeError:
-        print("⚠️ Non‑JSON from model. Showing formatted text.\n")
+        print("⚠️ Non-JSON from model. Showing formatted text.\n")
         return pretty_print(output)
