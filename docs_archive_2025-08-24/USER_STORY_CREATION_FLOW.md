@@ -52,9 +52,9 @@ This document outlines the complete step-by-step flow of how the `lovestory-buil
 ---
 
 ### **3. LLM Generates Story**
-- LangChain calls the LLM (e.g., OpenAI) with formatted prompt
+- BE-API calls the LLM (e.g., OpenAI) with formatted prompt
 - LLM returns story output
-- 🧠 **Component**: `ChatOpenAI` or `LLMChain`
+- 🧠 **Component**: `ChatOpenAI` or `BE-API`
 - 🔄 Output returned as: `story_title`, `story_description`, `acceptance_criteria`
 
 ---
@@ -81,7 +81,7 @@ This document outlines the complete step-by-step flow of how the `lovestory-buil
 
 ---
 
-### **6. LangChain Routes Refinement Requests**
+### **6. Backend API Routes Refinement Requests**
 - Injects message + current field context into refinement prompt
 - Example prompt:
   ```
@@ -92,7 +92,7 @@ This document outlines the complete step-by-step flow of how the `lovestory-buil
   The user has asked: "{{user_input}}"
   Suggest an improvement ONLY to the {{field}}. Return suggestion only.
   ```
-- 🧠 **Component**: `LLMChain` + conditional routing logic (e.g., classify → rewrite)
+- 🧠 **Component**: BE-API + conditional routing logic (e.g., classify → rewrite)
 - 🔄 Output = new field value
 
 ---
@@ -129,10 +129,3 @@ This document outlines the complete step-by-step flow of how the `lovestory-buil
 
 ---
 
-## ✨ Optional RAG Enhancement Points (Future/Advanced)
-
-If you integrate RAG down the line, here’s where it would fit:
-
-- **Between Steps 2–3**: Use embeddings to retrieve relevant stories from past examples (RAG input boost)
-- **In Chat Refinement**: Let LangChain retrieve similar refinements from a vector DB before prompting
-- 🔄 Component: `VectorStoreRetriever` + `StuffDocumentsChain` or `RetrievalQA`
