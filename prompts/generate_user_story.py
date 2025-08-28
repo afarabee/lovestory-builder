@@ -1,3 +1,4 @@
+
 from openai import OpenAI
 import json
 
@@ -21,7 +22,7 @@ def generate_user_story(
     context: dict,
     custom_prompt: str = "",
     file_content: str = "",
-    project_context: str = "",
+    kb_files_text: str = "",
     model: str = "gpt-4o"
 ):
     """
@@ -33,58 +34,49 @@ def generate_user_story(
     instruction = f"""You are an expert AI product partner helping Agile Product Owners generate high-quality user stories and testable acceptance criteria for export to Azure DevOps.
 
     Context (knowledge base):
-    - Project: {context.get('project_name')}
-    - Description: {context.get('project_description')}
-    - Persona: {context.get('persona')}
-    - Tone: {context.get('tone')}
-    - Format: {context.get('format')}
+    - Project: {context.get('project_name')}               # Project Name
+    - Description: {context.get('project_description')}    # Description
+    - Tone: {context.get('tone')}                          # Tone   
+    - Format: {context.get('format')}                      # Style guidelines
+    - Project Files: {kb_files_text}                       # Knowledge Base Files Text
 
-    Additional inputs:
-    - Raw input: {raw_input}
-    - Custom prompt: {custom_prompt}
-    - File content: {file_content}
-    - Project context: {project_context}
+    Additional inputs:                                     # Raw Input & File Upload
+    - Raw input: {raw_input}                               # Specifications & Requirements
+    - Custom prompt: {custom_prompt}                       # Custom Prompt
+    - File content: {file_content}                         # Upload Reference Files
 
     Task:
     Produce an INVEST-quality user story aligned to the context.
     The user story should include a title, description, and testable acceptance criteria in bullet points.
-    Do NOT include a 'definition of done' section.
-    Do NOT use Gherkin (Given/When/Then) format for the acceptance criteria.
     Return JSON if possible, but if not, just return text.
     """
 
     # Make the API call to OpenAI.
-    # Note: Use chat.completions.create for modern models like gpt-4o.
-    response = client.chat.completions.create(
+    response = client.responses.create(
         model=model,
-        messages=[{"role": "user", "content": instruction}],
+        instructions=instruction,
+        input={},
         temperature=0.0
     )
 
     output = response.choices[0].message.content
 
-    # Try to parse the output as strict JSON.
     try:
         parsed = json.loads(output)
-        # Explicitly remove the "definition_of_done" key if it exists.
         parsed.pop("definition_of_done", None)
-        return parsed  # Return a dictionary if the parsing is successful.
+        return parsed
     except json.JSONDecodeError:
-        # This block runs if the output is not valid JSON.
         print("⚠️ Model did not return valid JSON. Showing formatted output instead.\n")
-        # You may need to manually process the text output to remove "Definition of Done".
-        return pretty_print(output)  # Fallback to formatting as a plain string.
+        return pretty_print(output)
 
 if __name__ == "__main__":
-    # This is the main block that runs when you execute the script directly.
     raw_input = "As a user, I want to reset my password so that I can regain access if I forget it."
     custom_prompt = "Focus on security and user experience."
     file_content = "Related requirements: Password must be at least 12 characters, include a number and a symbol."
-    project_context = "This is for an eCommerce web application for a Contract Research Organization business."
+    kb_files_text = "Relevant SOP: Passwords must comply with NIST 800-63b and company policy."
     context = {
         "project_name": "eCommerce Platform",
         "project_description": "An eCommerce platform that offers research models for early stage drug development studies.",
-        "persona": "Research models buyer",
         "tone": "Professional",
         "format": "User Story"
     }
@@ -94,10 +86,9 @@ if __name__ == "__main__":
         context=context,
         custom_prompt=custom_prompt,
         file_content=file_content,
-        project_context=project_context
+        kb_files_text=kb_files_text
     )
 
-    # This conditional checks the type of the result and prints it appropriately.
     if isinstance(result, dict):
         print("✅ Success! The model returned valid JSON.\n")
         print(json.dumps(result, indent=2))
