@@ -20,7 +20,7 @@ def refine_field(
     existing_story: dict,
     field_name: str,
     user_instruction: str,
-    model: str = "gpt-4o"
+    model: str = "gpt-5"
 ):
     """
     Refine exactly one field. Returns {field_name: new_value} if JSON; else pretty text.
@@ -53,7 +53,7 @@ Return JSON like:
     response = client.chat.completions.create(
         model=model,
         messages=[{"role": "user", "content": prompt}],
-        temperature=0.2
+        temperature=0.0
     )
 
     output = response.choices[0].message.content

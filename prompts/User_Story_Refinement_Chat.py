@@ -28,7 +28,7 @@ def generate_user_story(
     custom_prompt: str = "",
     file_content: str = "",
     project_context: str = "",
-    model: str = "gpt-4o"
+    model: str = "gpt-5"
 ):
     """
     Turns raw input into a structured user story using project context.

@@ -1,14 +1,22 @@
-# part of chat refinement loop
-# includes building the suggestion and applying the suggestion
-# invoke right after LLM response, whether from refine_story or refine_field
 
+"""
+story_suggestion.py
+
+Contains both build_suggestion and apply_suggestion, including their purpose,
+structure, and usage within the AI User Story Generator refinement loop.
+"""
+
+import json
 import time
 import hashlib
-import json
-from typing import Any, Dict, List, Optional
 from copy import deepcopy
+from typing import Any, Dict, List, Optional
 
 Story = Dict[str, Any]
+
+# -------------------------------
+# 🧩 build_suggestion
+# -------------------------------
 
 def _now_iso() -> str:
     return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
@@ -18,13 +26,11 @@ def _sha(obj: Any) -> str:
 
 def _diff_dict(before: Any, after: Any, path: str = "") -> List[Dict[str, Any]]:
     """
-    Minimal JSON 'patch-like' diff without external deps.
-    Emits ops: replace / add / remove for scalars, arrays and dicts.
-    Good enough for UI previews; not a full RFC 6902.
+    Minimal JSON 'patch-like' diff.
+    Emits ops: replace / add / remove.
     """
     diffs: List[Dict[str, Any]] = []
 
-    # Both dicts
     if isinstance(before, dict) and isinstance(after, dict):
         bkeys, akeys = set(before.keys()), set(after.keys())
         for k in sorted(bkeys - akeys):
@@ -35,7 +41,6 @@ def _diff_dict(before: Any, after: Any, path: str = "") -> List[Dict[str, Any]]:
             diffs.extend(_diff_dict(before[k], after[k], f"{path}/{k}" if path else f"/{k}"))
         return diffs
 
-    # Both lists (naive index-by-index)
     if isinstance(before, list) and isinstance(after, list):
         maxlen = max(len(before), len(after))
         for i in range(maxlen):
@@ -48,38 +53,34 @@ def _diff_dict(before: Any, after: Any, path: str = "") -> List[Dict[str, Any]]:
                 diffs.extend(_diff_dict(before[i], after[i], p))
         return diffs
 
-    # Scalars or mismatched types → replace if different
     if before != after:
         diffs.append({"op": "replace", "path": path or "/", "before": before, "after": after})
     return diffs
-
 
 def build_suggestion(
     before_story: Story,
     after_story: Story,
     *,
-    scope: str,                          # "full" or "field"
-    field_name: Optional[str] = None,    # required if scope == "field"
+    scope: str,
+    field_name: Optional[str] = None,
     model: str = "gpt-5",
     temperature: float = 0.0,
     retrieval_used: bool = False,
     meta: Optional[Dict[str, Any]] = None
 ) -> Dict[str, Any]:
     """
-    Create a UI-ready suggestion object with diff.
-    Use this immediately after a refine call succeeds.
+    Compares two story versions and returns a structured suggestion object,
+    including diff metadata for UI rendering and audit logging.
+
+    - Supports both full and field-level scopes
+    - Produces unique, traceable suggestion IDs
+    - Does not mutate input objects
     """
     if scope == "field" and not field_name:
         raise ValueError("field_name is required when scope='field'.")
 
-    # (Optional) assert that after_story looks like a full story for field scope
-    # if scope == "field" and set(after_story.keys()) <= {field_name}:
-    #     raise ValueError("after_story should be a full story JSON; merge field updates before calling.")
-
-    # Deepcopy to freeze snapshot at creation time
     before_copy = deepcopy(before_story)
     after_copy = deepcopy(after_story)
-
     diff = _diff_dict(before_copy, after_copy)
     sid = f"sugg_{_sha({'b': before_copy, 'a': after_copy})[:12]}"
 
@@ -99,27 +100,30 @@ def build_suggestion(
         }
     }
 
-# Applies the suggestion
+# -------------------------------
+# ✅ apply_suggestion
+# -------------------------------
+
 def apply_suggestion(current_story: Story, suggestion: Dict[str, Any]) -> Story:
-    """Safely apply a suggestion produced by build_suggestion()."""
-    # Optional drift check: user may have edited since suggestion was created
-    before = suggestion.get("before")
-    if before is not None and before != current_story:
-        # log/warn or block; for now we just proceed
-        # print("⚠️ Warning: current story differs from suggestion.before")
-        pass
+    """
+    Applies the given suggestion object to the current story state.
+
+    - Optional drift check warns if 'before' state doesn't match
+    - Returns a deep copy of the updated 'after' story
+    - Caller is responsible for snapshot, dev notes, and undo stack
+
+    Parameters:
+        current_story (dict): Current story in session
+        suggestion (dict): Suggestion object from build_suggestion()
+
+    Returns:
+        dict: Updated story
+    """
+    if suggestion.get("before") and suggestion["before"] != current_story:
+        print("⚠️ Warning: The current story differs from the suggestion's 'before' state.")
 
     after = suggestion.get("after")
     if not isinstance(after, dict):
-        raise ValueError("Invalid suggestion: missing or non-dict 'after' field.")
+        raise ValueError("Invalid suggestion: missing or malformed 'after' field.")
 
-    # Return a copy to avoid accidental in-place mutation by callers
     return deepcopy(after)
-
-# sanity check
-if __name__ == "__main__":
-    before_story = {"title": "T1", "tags": ["a"]}
-    after_story  = {"title": "T1 updated", "tags": ["a","b"]}
-    suggestion = build_suggestion(before_story, after_story, scope="full", model="gpt-4o")
-    applied = apply_suggestion(before_story, suggestion)
-    print("Applied:", applied)
